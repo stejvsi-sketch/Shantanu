@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// booking service handles all booking business logic
 @ApplicationScoped
 public class BookingService {
 
@@ -21,64 +20,73 @@ public class BookingService {
     BookingRepository repository;
 
     public List<Booking> findAllOrderedByDate() {
-        return repository.findAllOrderedByDate();
+        List<Booking> bookings = repository.findAllOrderedByDate();
+        return bookings;
     }
 
     public Booking findById(Long id) {
-        return repository.findById(id);
+        Booking booking = repository.findById(id);
+        return booking;
     }
 
-    // get bookings for a specific customer
     public List<Booking> findByCustomerId(Long customerId) {
-        return repository.findByCustomerId(customerId);
+        List<Booking> bookings = repository.findByCustomerId(customerId);
+        return bookings;
     }
 
     public List<Booking> findByHotelId(Long hotelId) {
-        return repository.findByHotelId(hotelId);
+        List<Booking> bookings = repository.findByHotelId(hotelId);
+        return bookings;
     }
 
-
-    // create new booking - checks for duplicates first
     @Transactional
     public Booking create(Booking booking) throws Exception {
-        validateBooking(booking);
+        // do validation
+        Set<ConstraintViolation<Booking>> violations = validator.validate(booking);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
 
-        // prevent duplicate bookings
-        if(bookingAlreadyExists(booking)) {
+        // check if booking already exists
+        List<Booking> customerBookings = repository.findByCustomerId(booking.getCustomer().getId());
+        boolean duplicateFound = false;
+        for(int i = 0; i < customerBookings.size(); i++) {
+            Booking existingBooking = customerBookings.get(i);
+            if(existingBooking.getHotel().getId().equals(booking.getHotel().getId())) {
+                if(existingBooking.getBookingDate().equals(booking.getBookingDate())) {
+                    if(booking.getId() == null) {
+                        duplicateFound = true;
+                        break;
+                    } else {
+                        if(!existingBooking.getId().equals(booking.getId())) {
+                            duplicateFound = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if(duplicateFound) {
             throw new Exception("This customer already has a booking at this hotel on this date");
         }
 
-        return repository.create(booking);
+        Booking createdBooking = repository.create(booking);
+        return createdBooking;
     }
 
     @Transactional
     public Booking update(Booking booking) throws Exception {
-        validateBooking(booking);
-        return repository.update(booking);
+        Set<ConstraintViolation<Booking>> violations = validator.validate(booking);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
+        Booking updatedBooking = repository.update(booking);
+        return updatedBooking;
     }
 
     @Transactional
     public void delete(Booking booking) {
         repository.delete(booking);
-    }
-
-    private void validateBooking(Booking booking) throws ConstraintViolationException {
-        Set<ConstraintViolation<Booking>> violations = validator.validate(booking);
-        if(!violations.isEmpty()) {
-            throw new ConstraintViolationException(new HashSet<>(violations));
-        }
-    }
-
-    // check if same customer already booked same hotel on same date
-    private boolean bookingAlreadyExists(Booking booking) {
-        List<Booking> customerBookings = repository.findByCustomerId(booking.getCustomer().getId());
-        for(Booking existingBooking : customerBookings) {
-            if(existingBooking.getHotel().getId().equals(booking.getHotel().getId()) &&
-                existingBooking.getBookingDate().equals(booking.getBookingDate()) &&
-                !existingBooking.getId().equals(booking.getId())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

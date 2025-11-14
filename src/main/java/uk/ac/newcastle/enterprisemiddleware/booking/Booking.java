@@ -79,22 +79,54 @@ public class Booking implements Serializable {
         this.bookingDate = bookingDate;
     }
 
-    // custom equals method for checking duplicate bookings
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(!(o instanceof Booking)) return false;
+        if(this == o) {
+            return true;
+        }
+        if(o == null) {
+            return false;
+        }
+        if(!(o instanceof Booking)) {
+            return false;
+        }
         Booking booking = (Booking) o;
-        if(!customer.equals(booking.customer)) return false;
-        if(!hotel.equals(booking.hotel)) return false;
-        return bookingDate.equals(booking.bookingDate);
+        if(customer == null) {
+            if(booking.customer != null) {
+                return false;
+            }
+        } else if(!customer.equals(booking.customer)) {
+            return false;
+        }
+        if(hotel == null) {
+            if(booking.hotel != null) {
+                return false;
+            }
+        } else if(!hotel.equals(booking.hotel)) {
+            return false;
+        }
+        if(bookingDate == null) {
+            if(booking.bookingDate != null) {
+                return false;
+            }
+        } else if(!bookingDate.equals(booking.bookingDate)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = customer.hashCode();
-        result = 31 * result + hotel.hashCode();
-        result = 31 * result + bookingDate.hashCode();
+        int result = 17;
+        if(customer != null) {
+            result = 31 * result + customer.hashCode();
+        }
+        if(hotel != null) {
+            result = 31 * result + hotel.hashCode();
+        }
+        if(bookingDate != null) {
+            result = 31 * result + bookingDate.hashCode();
+        }
         return result;
     }
 }

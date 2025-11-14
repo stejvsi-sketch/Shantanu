@@ -10,10 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Service layer for customer operations
- * handles validation and business logic
- */
+// customer service
 @ApplicationScoped
 public class CustomerService {
 
@@ -23,64 +20,63 @@ public class CustomerService {
     @Inject
     CustomerRepository repository;
 
-
-    // get all customers
     public List<Customer> findAllOrderedByName() {
-        return repository.findAllOrderedByName();
+        List<Customer> customers = repository.findAllOrderedByName();
+        return customers;
     }
 
     public Customer findById(Long id) {
-        return repository.findById(id);
+        Customer customer = repository.findById(id);
+        return customer;
     }
 
     public Customer findByEmail(String email) {
-        return repository.findByEmail(email);
+        Customer customer = repository.findByEmail(email);
+        return customer;
     }
 
-
-    // create new customer
     @Transactional
     public Customer create(Customer customer) throws Exception {
-        validateCustomer(customer);
+        // validate first
+        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
         
-        // check if email already taken
-        if(emailAlreadyExists(customer.getEmail(), customer.getId())) {
-            throw new Exception("Email already exists");
+        // check email not already used
+        Customer existingCustomer = repository.findByEmail(customer.getEmail());
+        if(existingCustomer != null) {
+            if(customer.getId() == null || !existingCustomer.getId().equals(customer.getId())) {
+                throw new Exception("Email already exists");
+            }
         }
 
-        return repository.create(customer);
+        Customer createdCustomer = repository.create(customer);
+        return createdCustomer;
     }
 
     @Transactional
     public Customer update(Customer customer) throws Exception {
-        validateCustomer(customer);
+        // validate
+        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
         
-        if(emailAlreadyExists(customer.getEmail(), customer.getId())) {
-            throw new Exception("Email already exists");
+        // check email
+        Customer existingCustomer = repository.findByEmail(customer.getEmail());
+        if(existingCustomer != null) {
+            if(!existingCustomer.getId().equals(customer.getId())) {
+                throw new Exception("Email already exists");
+            }
         }
 
-        return repository.update(customer);
+        Customer updatedCustomer = repository.update(customer);
+        return updatedCustomer;
     }
 
     @Transactional
     public void delete(Customer customer) {
         repository.delete(customer);
-    }
-
-    // validate customer data
-    private void validateCustomer(Customer customer) throws ConstraintViolationException {
-        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
-        if(!violations.isEmpty()) {
-            throw new ConstraintViolationException(new HashSet<>(violations));
-        }
-    }
-
-    // helper method to check duplicate emails
-    private boolean emailAlreadyExists(String email, Long id) {
-        Customer existing = repository.findByEmail(email);
-        if(existing != null && !existing.getId().equals(id)) {
-            return true;
-        }
-        return false;
     }
 }

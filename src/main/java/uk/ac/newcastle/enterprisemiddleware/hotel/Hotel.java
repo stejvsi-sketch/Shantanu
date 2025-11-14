@@ -96,14 +96,32 @@ public class Hotel implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(!(o instanceof Hotel)) return false;
+        if(this == o) {
+            return true;
+        }
+        if(o == null) {
+            return false;
+        }
+        if(!(o instanceof Hotel)) {
+            return false;
+        }
         Hotel hotel = (Hotel) o;
-        return phoneNumber.equals(hotel.phoneNumber);
+        if(phoneNumber == null) {
+            if(hotel.phoneNumber != null) {
+                return false;
+            }
+        } else if(!phoneNumber.equals(hotel.phoneNumber)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(phoneNumber);
+        int result = 17;
+        if(phoneNumber != null) {
+            result = 31 * result + phoneNumber.hashCode();
+        }
+        return result;
     }
 }

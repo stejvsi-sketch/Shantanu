@@ -85,7 +85,7 @@ public class BookingRestService {
         return Response.ok(bookings).build();
     }
 
-    // create booking - need to verify customer and hotel exist first
+    // create booking
     @POST
     @Operation(summary = "Create a new Booking", description = "Creates a new booking from the provided JSON object")
     @APIResponses(value = {
@@ -100,48 +100,70 @@ public class BookingRestService {
             throw new WebApplicationException("Invalid booking data", Response.Status.BAD_REQUEST);
         }
 
-        // validate customer
-        if(booking.getCustomer() == null || booking.getCustomer().getId() == null) {
-            Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("error", "Customer is required");
-            return Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
+        // check customer is set
+        if(booking.getCustomer() == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Customer is required");
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+            return resp;
+        }
+        if(booking.getCustomer().getId() == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Customer is required");
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+            return resp;
         }
 
-        // validate hotel
-        if(booking.getHotel() == null || booking.getHotel().getId() == null) {
-            Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("error", "Hotel is required");
-            return Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
+        // check hotel is set
+        if(booking.getHotel() == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Hotel is required");
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+            return resp;
+        }
+        if(booking.getHotel().getId() == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Hotel is required");
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+            return resp;
         }
 
-        // fetch actual customer object from DB
-        Customer customer = customerService.findById(booking.getCustomer().getId());
+        // get customer from database
+        Long customerId = booking.getCustomer().getId();
+        Customer customer = customerService.findById(customerId);
         if(customer == null) {
             throw new WebApplicationException("Customer not found", Response.Status.NOT_FOUND);
         }
 
-        // fetch actual hotel object from DB
-        Hotel hotel = hotelService.findById(booking.getHotel().getId());
+        // get hotel from database
+        Long hotelId = booking.getHotel().getId();
+        Hotel hotel = hotelService.findById(hotelId);
         if(hotel == null) {
             throw new WebApplicationException("Hotel not found", Response.Status.NOT_FOUND);
         }
 
+        booking.setId(null);
+        booking.setCustomer(customer);
+        booking.setHotel(hotel);
+        
+        Booking created = null;
         try {
-            booking.setId(null);
-            booking.setCustomer(customer);
-            booking.setHotel(hotel);
-            Booking created = service.create(booking);
-            return Response.status(Response.Status.CREATED).entity(created).build();
+            created = service.create(booking);
         } catch(ConstraintViolationException e) {
-            Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("error", "Validation failed");
-            responseObj.put("details", e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Validation failed");
+            error.put("details", e.getMessage());
+            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+            return resp;
         } catch(Exception e) {
-            Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("error", e.getMessage());
-            return Response.status(Response.Status.CONFLICT).entity(responseObj).build();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            Response resp = Response.status(Response.Status.CONFLICT).entity(error).build();
+            return resp;
         }
+        
+        Response resp = Response.status(Response.Status.CREATED).entity(created).build();
+        return resp;
     }
 
     // cancel booking

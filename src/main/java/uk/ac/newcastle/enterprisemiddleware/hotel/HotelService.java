@@ -20,56 +20,62 @@ public class HotelService {
     HotelRepository repository;
 
     public List<Hotel> findAllOrderedByName() {
-        return repository.findAllOrderedByName();
+        List<Hotel> hotels = repository.findAllOrderedByName();
+        return hotels;
     }
 
     public Hotel findById(Long id) {
-        return repository.findById(id);
+        Hotel hotel = repository.findById(id);
+        return hotel;
     }
 
     public Hotel findByPhoneNumber(String phoneNumber) {
-        return repository.findByPhoneNumber(phoneNumber);
+        Hotel hotel = repository.findByPhoneNumber(phoneNumber);
+        return hotel;
     }
 
     @Transactional
     public Hotel create(Hotel hotel) throws Exception {
-        validateHotel(hotel);
+        // validation
+        Set<ConstraintViolation<Hotel>> violations = validator.validate(hotel);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
         
-        if (phoneNumberAlreadyExists(hotel.getPhoneNumber(), hotel.getId())) {
-            throw new Exception("Phone number already exists");
+        // check phone number
+        Hotel existingHotel = repository.findByPhoneNumber(hotel.getPhoneNumber());
+        if(existingHotel != null) {
+            if(hotel.getId() == null || !existingHotel.getId().equals(hotel.getId())) {
+                throw new Exception("Phone number already exists");
+            }
         }
 
-        return repository.create(hotel);
+        Hotel createdHotel = repository.create(hotel);
+        return createdHotel;
     }
 
     @Transactional
     public Hotel update(Hotel hotel) throws Exception {
-        validateHotel(hotel);
+        // validation
+        Set<ConstraintViolation<Hotel>> violations = validator.validate(hotel);
+        if(!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
         
-        if (phoneNumberAlreadyExists(hotel.getPhoneNumber(), hotel.getId())) {
-            throw new Exception("Phone number already exists");
+        // check phone number
+        Hotel existingHotel = repository.findByPhoneNumber(hotel.getPhoneNumber());
+        if(existingHotel != null) {
+            if(!existingHotel.getId().equals(hotel.getId())) {
+                throw new Exception("Phone number already exists");
+            }
         }
 
-        return repository.update(hotel);
+        Hotel updatedHotel = repository.update(hotel);
+        return updatedHotel;
     }
 
     @Transactional
     public void delete(Hotel hotel) {
         repository.delete(hotel);
-    }
-
-    private void validateHotel(Hotel hotel) throws ConstraintViolationException {
-        Set<ConstraintViolation<Hotel>> violations = validator.validate(hotel);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(new HashSet<>(violations));
-        }
-    }
-
-    private boolean phoneNumberAlreadyExists(String phoneNumber, Long id) {
-        Hotel existingHotel = repository.findByPhoneNumber(phoneNumber);
-        if (existingHotel != null && !existingHotel.getId().equals(id)) {
-            return true;
-        }
-        return false;
     }
 }

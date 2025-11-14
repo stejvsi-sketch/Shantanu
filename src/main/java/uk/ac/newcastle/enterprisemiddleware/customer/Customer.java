@@ -94,17 +94,34 @@ public class Customer implements Serializable {
         this.bookings = bookings;
     }
 
-    // equals and hashcode based on email - learned this is important for JPA
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(!(o instanceof Customer)) return false;
+        if(this == o) {
+            return true;
+        }
+        if(o == null) {
+            return false;
+        }
+        if(!(o instanceof Customer)) {
+            return false;
+        }
         Customer customer = (Customer) o;
-        return email.equals(customer.email);
+        if(email == null) {
+            if(customer.email != null) {
+                return false;
+            }
+        } else if(!email.equals(customer.email)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(email);
+        int result = 17;
+        if(email != null) {
+            result = 31 * result + email.hashCode();
+        }
+        return result;
     }
 }

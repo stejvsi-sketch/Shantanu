@@ -75,21 +75,26 @@ public class CustomerRestService {
             throw new WebApplicationException("Invalid customer data", Response.Status.BAD_REQUEST);
         }
 
+        customer.setId(null);
+        Customer created = null;
+        
         try {
-            customer.setId(null); // make sure id is null for new customer
-            Customer created = service.create(customer);
-            return Response.status(Response.Status.CREATED).entity(created).build();
+            created = service.create(customer);
         } catch(ConstraintViolationException e) {
             Map<String, String> responseObj = new HashMap<>();
             responseObj.put("error", "Validation failed");
             responseObj.put("details", e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
+            Response response = Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
+            return response;
         } catch(Exception e) {
-            // probably duplicate email
             Map<String, String> responseObj = new HashMap<>();
             responseObj.put("error", e.getMessage());
-            return Response.status(Response.Status.CONFLICT).entity(responseObj).build();
+            Response response = Response.status(Response.Status.CONFLICT).entity(responseObj).build();
+            return response;
         }
+        
+        Response response = Response.status(Response.Status.CREATED).entity(created).build();
+        return response;
     }
 
     // DELETE customer (cascades to bookings)

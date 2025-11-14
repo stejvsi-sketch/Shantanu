@@ -34,7 +34,8 @@ public class BookingRestServiceTest {
 
     @Test
     public void testCreateValidBooking() {
-        String bookingJson = "{\"customer\":{\"id\":1},\"hotel\":{\"id\":1},\"bookingDate\":\"" + getFutureDate() + "\"}";
+        // new format: customerId, hotelId, date
+        String bookingJson = "{\"customerId\":1,\"hotelId\":1,\"date\":\"" + getFutureDate() + "\"}";
         
         given()
             .contentType(ContentType.JSON)
@@ -42,13 +43,13 @@ public class BookingRestServiceTest {
             .when().post("/api/bookings")
             .then()
             .statusCode(201)
-            .body("customer.id", equalTo(1))
-            .body("hotel.id", equalTo(1));
+            .body("id", notNullValue());
     }
 
     @Test
     public void testCreateBookingWithPastDate() {
-        String bookingJson = "{\"customer\":{\"id\":1},\"hotel\":{\"id\":1},\"bookingDate\":\"2020-01-01\"}";
+        // test past date validation
+        String bookingJson = "{\"customerId\":1,\"hotelId\":1,\"date\":\"2020-01-01\"}";
         
         given()
             .contentType(ContentType.JSON)
@@ -60,7 +61,8 @@ public class BookingRestServiceTest {
 
     @Test
     public void testCreateBookingWithNonExistentCustomer() {
-        String bookingJson = "{\"customer\":{\"id\":999},\"hotel\":{\"id\":1},\"bookingDate\":\"" + getFutureDate() + "\"}";
+        // customer 999 doesnt exist
+        String bookingJson = "{\"customerId\":999,\"hotelId\":1,\"date\":\"" + getFutureDate() + "\"}";
         
         given()
             .contentType(ContentType.JSON)
@@ -72,7 +74,8 @@ public class BookingRestServiceTest {
 
     @Test
     public void testCreateBookingWithNonExistentHotel() {
-        String bookingJson = "{\"customer\":{\"id\":1},\"hotel\":{\"id\":999},\"bookingDate\":\"" + getFutureDate() + "\"}";
+        // hotel 999 doesnt exist
+        String bookingJson = "{\"customerId\":1,\"hotelId\":999,\"date\":\"" + getFutureDate() + "\"}";
         
         given()
             .contentType(ContentType.JSON)
@@ -93,7 +96,8 @@ public class BookingRestServiceTest {
 
     @Test
     public void testCancelBooking() {
-        String bookingJson = "{\"customer\":{\"id\":2},\"hotel\":{\"id\":2},\"bookingDate\":\"" + getFutureDate() + "\"}";
+        // create booking then cancel it
+        String bookingJson = "{\"customerId\":2,\"hotelId\":2,\"date\":\"" + getFutureDate() + "\"}";
         
         int bookingId = given()
             .contentType(ContentType.JSON)
@@ -116,9 +120,10 @@ public class BookingRestServiceTest {
 
     @Test
     public void testDeleteCustomerCascadesBookings() {
+        // create hotel and customer, then delete customer and check cascade
         int hotelId = createHotel("NE7777");
         int customerId = createCustomer();
-        String bookingJson = "{\"customer\":{\"id\":" + customerId + "},\"hotel\":{\"id\":" + hotelId + "},\"bookingDate\":\"" + getFutureDate() + "\"}";
+        String bookingJson = "{\"customerId\":" + customerId + ",\"hotelId\":" + hotelId + ",\"date\":\"" + getFutureDate() + "\"}";
         
         int bookingId = given()
             .contentType(ContentType.JSON)
@@ -141,9 +146,10 @@ public class BookingRestServiceTest {
 
     @Test
     public void testDeleteHotelCascadesBookings() {
+        // create customer and hotel, then delete hotel and check cascade
         int customerId = createCustomer();
         int hotelId = createHotel("NE6666");
-        String bookingJson = "{\"customer\":{\"id\":" + customerId + "},\"hotel\":{\"id\":" + hotelId + "},\"bookingDate\":\"" + getFutureDate() + "\"}";
+        String bookingJson = "{\"customerId\":" + customerId + ",\"hotelId\":" + hotelId + ",\"date\":\"" + getFutureDate() + "\"}";
         
         int bookingId = given()
             .contentType(ContentType.JSON)

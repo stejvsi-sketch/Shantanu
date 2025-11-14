@@ -117,7 +117,13 @@ public class CustomerRestService {
             //System.out.println("Customer created successfully");
         }
         
-        Response response = Response.status(Response.Status.CREATED).entity(created).build();
+        // return simple response with id for REST client compatibility
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", created.getId());
+        result.put("email", created.getEmail());
+        result.put("name", created.getName());
+        result.put("phoneNumber", created.getPhoneNumber());
+        Response response = Response.status(Response.Status.CREATED).entity(result).build();
         return response;
     }
 

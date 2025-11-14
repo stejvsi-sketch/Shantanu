@@ -87,9 +87,9 @@ public class BookingRestService {
         return Response.ok(bookings).build();
     }
 
-    // create booking
+    // create booking - takes 3 params: customerId, hotelId, date
     @POST
-    @Operation(summary = "Create a new Booking", description = "Creates a new booking from the provided JSON object")
+    @Operation(summary = "Create a new Booking", description = "Creates a new booking with customerId, hotelId and date")
     @APIResponses(value = {
         @APIResponse(responseCode = "201", description = "Booking created successfully",
             content = @Content(schema = @Schema(implementation = Booking.class))),
@@ -97,53 +97,35 @@ public class BookingRestService {
         @APIResponse(responseCode = "404", description = "Customer or Hotel not found"),
         @APIResponse(responseCode = "409", description = "Booking already exists for this date")
     })
-    public Response createBooking(Booking booking) {
-        if(booking == null) {
+    public Response createBooking(BookingCreate bookingReq) {
+        // check if request is null
+        if(bookingReq == null) {
             throw new WebApplicationException("Invalid booking data", Response.Status.BAD_REQUEST);
         }
-
-        // need to check if customer is there
-        Customer bookingCustomer = booking.getCustomer();
-        if(bookingCustomer == null) {
-            //System.out.println("Customer is missing");
+        
+        // check customer id
+        if(bookingReq.customerId == null) {
             Map<String, String> error = new HashMap<>();
-            String errorMsg = "Customer is required";
-            error.put("error", errorMsg);
-            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-            return resp;
+            error.put("error", "Customer ID is required");
+            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
         }
-        Long customerIdFromBooking = bookingCustomer.getId();
-        if(customerIdFromBooking == null) {
-            //System.out.println("Customer ID is missing");
+        
+        // check hotel id
+        if(bookingReq.hotelId == null) {
             Map<String, String> error = new HashMap<>();
-            String errorMsg = "Customer is required";
-            error.put("error", errorMsg);
-            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-            return resp;
+            error.put("error", "Hotel ID is required");
+            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
         }
-
-        // check if hotel is there
-        Hotel bookingHotel = booking.getHotel();
-        if(bookingHotel == null) {
-            //System.out.println("Hotel is missing");
+        
+        // check date
+        if(bookingReq.date == null) {
             Map<String, String> error = new HashMap<>();
-            String errorMsg = "Hotel is required";
-            error.put("error", errorMsg);
-            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-            return resp;
-        }
-        Long hotelIdFromBooking = bookingHotel.getId();
-        if(hotelIdFromBooking == null) {
-            //System.out.println("Hotel ID is missing");
-            Map<String, String> error = new HashMap<>();
-            String errorMsg = "Hotel is required";
-            error.put("error", errorMsg);
-            Response resp = Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-            return resp;
+            error.put("error", "Date is required");
+            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
         }
 
-        // now get the actual customer from database
-        Long customerId = customerIdFromBooking;
+        // get the customer from database
+        Long customerId = bookingReq.customerId;
         //System.out.println("Looking for customer id: " + customerId);
         Customer customer = customerService.findById(customerId);
         if(customer == null) {
@@ -153,8 +135,8 @@ public class BookingRestService {
         }
         //System.out.println("Customer found: " + customer.getName());
 
-        // get the actual hotel from database
-        Long hotelId = hotelIdFromBooking;
+        // get the hotel from database
+        Long hotelId = bookingReq.hotelId;
         //System.out.println("Looking for hotel id: " + hotelId);
         Hotel hotel = hotelService.findById(hotelId);
         if(hotel == null) {
@@ -164,11 +146,11 @@ public class BookingRestService {
         }
         //System.out.println("Hotel found: " + hotel.getName());
 
-        // set the id to null for new booking
-        booking.setId(null);
-        // set the customer and hotel objects
+        // create the booking object
+        Booking booking = new Booking();
         booking.setCustomer(customer);
         booking.setHotel(hotel);
+        booking.setBookingDate(bookingReq.date);
         
         Booking created = null;
         boolean creationSuccessful = false;
@@ -201,7 +183,10 @@ public class BookingRestService {
             //System.out.println("Success!");
         }
         
-        Response resp = Response.status(Response.Status.CREATED).entity(created).build();
+        // return simple response with just id for REST client compatibility
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", created.getId());
+        Response resp = Response.status(Response.Status.CREATED).entity(result).build();
         return resp;
     }
 

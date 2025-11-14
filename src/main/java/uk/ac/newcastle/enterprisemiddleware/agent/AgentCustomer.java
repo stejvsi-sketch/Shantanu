@@ -7,59 +7,64 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
-// Agent customer - this is OUR customer in the agent service
-// different from the downstream service customers
 @Entity
 @Table(name = "agent_customer", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class AgentCustomer implements Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // agent customer id
+    private Long id;
     
     @NotNull
     @Size(min = 1, max = 50)
     @Pattern(regexp = "[A-Za-z-' ]+", message = "Name must contain only letters")
-    private String name; // customer name
+    private String name;
     
     @NotNull
     @Email
-    private String email; // customer email
+    private String email;
     
     @NotNull
     @Pattern(regexp = "^0[0-9]{10}$", message = "Phone must start with 0 and be 11 digits")
-    private String phonenumber; // customer phone
+    private String phonenumber;
     
-    // getters and setters
     public Long getId() {
-        return id;
+        Long idValue = this.id;
+        return idValue;
     }
     
     public void setId(Long id) {
-        this.id = id;
+        Long newId = id;
+        this.id = newId;
     }
     
     public String getName() {
-        return name;
+        String nameValue = this.name;
+        return nameValue;
     }
     
     public void setName(String name) {
-        this.name = name;
+        String newName = name;
+        this.name = newName;
     }
     
     public String getEmail() {
-        return email;
+        String emailValue = this.email;
+        return emailValue;
     }
     
     public void setEmail(String email) {
-        this.email = email;
+        String newEmail = email;
+        this.email = newEmail;
     }
     
     public String getPhonenumber() {
-        return phonenumber;
+        String phoneValue = this.phonenumber;
+        return phoneValue;
     }
     
     public void setPhonenumber(String phonenumber) {
-        this.phonenumber = phonenumber;
+        String newPhone = phonenumber;
+        this.phonenumber = newPhone;
     }
 }

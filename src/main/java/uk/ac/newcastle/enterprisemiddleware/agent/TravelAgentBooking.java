@@ -4,73 +4,83 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
-// Aggregate booking - stores references to bookings across 3 services
-// one agent booking = 1 hotel booking + 1 taxi booking + 1 hotel2 booking
 @Entity
 @Table(name = "travel_agent_booking")
 public class TravelAgentBooking implements Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // our aggregate booking id
+    private Long id;
     
-    private Long customerId; // which agent customer made this booking
+    private Long customerId;
     
     @Temporal(TemporalType.DATE)
-    private Date date; // booking date
+    private Date date;
     
-    private Long hotelBookingId; // booking id in our hotel service
+    private Long hotelBookingId;
     
-    private Long taxiBookingId; // booking id in taxi service
+    private Long taxiBookingId;
     
-    private Long hotel2BookingId; // booking id in second hotel service
+    private Long hotel2BookingId;
     
-    // getters setters
+    
     public Long getId() {
-        return id;
+        Long x=this.id;
+        return x;
     }
     
     public void setId(Long id) {
-        this.id = id;
+        Long y=id;
+        this.id=y;
     }
     
     public Long getCustomerId() {
-        return customerId;
+        Long cid=this.customerId;
+        return cid;
     }
     
     public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
+        Long temp=customerId;
+        this.customerId=temp;
     }
     
     public Date getDate() {
-        return date;
+        Date d=this.date;
+        return d;
     }
     
     public void setDate(Date date) {
-        this.date = date;
+        Date dt=date;
+        this.date=dt;
     }
     
     public Long getHotelBookingId() {
-        return hotelBookingId;
+        Long hid=this.hotelBookingId;
+        return hid;
     }
     
     public void setHotelBookingId(Long hotelBookingId) {
-        this.hotelBookingId = hotelBookingId;
+        Long h=hotelBookingId;
+        this.hotelBookingId=h;
     }
     
     public Long getTaxiBookingId() {
-        return taxiBookingId;
+        Long tid=this.taxiBookingId;
+        return tid;
     }
     
     public void setTaxiBookingId(Long taxiBookingId) {
-        this.taxiBookingId = taxiBookingId;
+        Long t=taxiBookingId;
+        this.taxiBookingId=t;
     }
     
     public Long getHotel2BookingId() {
-        return hotel2BookingId;
+        Long h2id=this.hotel2BookingId;
+        return h2id;
     }
     
     public void setHotel2BookingId(Long hotel2BookingId) {
-        this.hotel2BookingId = hotel2BookingId;
+        Long h2=hotel2BookingId;
+        this.hotel2BookingId=h2;
     }
 }

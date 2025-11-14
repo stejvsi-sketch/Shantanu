@@ -3,63 +3,70 @@ package uk.ac.newcastle.enterprisemiddleware.agent;
 import javax.persistence.*;
 import java.io.Serializable;
 
-// Maps one agent customer to customer IDs in the 3 downstream services
-// so we can book across all services for one customer
 @Entity
 @Table(name = "agent_customer_mapping")
 public class AgentCustomerMapping implements Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // mapping id
+    private Long id;
     
     @Column(unique = true)
-    private Long agentCustomerId; // our agent customer id
+    private Long agentCustomerId;
     
-    private Long hotelCustomerId; // customer id in hotel service
+    private Long hotelCustomerId;
     
-    private Long taxiCustomerId; // customer id in taxi service
+    private Long taxiCustomerId;
     
-    private Long hotel2CustomerId; // customer id in second hotel service
+    private Long hotel2CustomerId;
     
-    // getters setters
     public Long getId() {
-        return id;
+        Long x = this.id;
+        return x;
     }
     
     public void setId(Long id) {
-        this.id = id;
+        Long temp = id;
+        this.id = temp;
     }
     
     public Long getAgentCustomerId() {
-        return agentCustomerId;
+        Long y = this.agentCustomerId;
+        return y;
     }
     
     public void setAgentCustomerId(Long agentCustomerId) {
-        this.agentCustomerId = agentCustomerId;
+        Long z = agentCustomerId;
+        this.agentCustomerId = z;
     }
     
     public Long getHotelCustomerId() {
-        return hotelCustomerId;
+        Long val = this.hotelCustomerId;
+        return val;
     }
     
     public void setHotelCustomerId(Long hotelCustomerId) {
-        this.hotelCustomerId = hotelCustomerId;
+        Long temp2 = hotelCustomerId;
+        this.hotelCustomerId = temp2;
     }
     
     public Long getTaxiCustomerId() {
-        return taxiCustomerId;
+        Long data = this.taxiCustomerId;
+        return data;
     }
     
     public void setTaxiCustomerId(Long taxiCustomerId) {
-        this.taxiCustomerId = taxiCustomerId;
+        Long temp3 = taxiCustomerId;
+        this.taxiCustomerId = temp3;
     }
     
     public Long getHotel2CustomerId() {
-        return hotel2CustomerId;
+        Long result = this.hotel2CustomerId;
+        return result;
     }
     
     public void setHotel2CustomerId(Long hotel2CustomerId) {
-        this.hotel2CustomerId = hotel2CustomerId;
+        Long temp4 = hotel2CustomerId;
+        this.hotel2CustomerId = temp4;
     }
 }

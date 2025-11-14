@@ -3,21 +3,19 @@ package uk.ac.newcastle.enterprisemiddleware.agent;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-// Request for creating aggregate booking
-// agent customer already exists
 public class TravelAgentRequest {
     @NotNull
-    public Long customerId; // our agent customer id
+    public Long customerId;
     
     @NotNull
-    public Date date; // booking date for all services
+    public Date date;
     
     @NotNull
-    public Long hotelId; // which hotel in our service
+    public Long hotelId;
     
     @NotNull
-    public Long taxiId; // which taxi in taxi service
+    public Long taxiId;
     
     @NotNull
-    public Long hotel2Id; // which hotel in second hotel service
+    public Long hotel2Id;
 }

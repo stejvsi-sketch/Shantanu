@@ -3,26 +3,25 @@ package uk.ac.newcastle.enterprisemiddleware.agent;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-// Request for guest booking - creates customer + books across services
 public class GuestBookingRequest {
     @NotNull
-    public String name; // customer name
+    public String name;
     
     @NotNull
-    public String email; // customer email
+    public String email;
     
     @NotNull
-    public String phonenumber; // customer phone
+    public String phonenumber;
     
     @NotNull
-    public Date date; // booking date
+    public Date date;
     
     @NotNull
-    public Long hotelId; // which hotel in our service
+    public Long hotelId;
     
     @NotNull
-    public Long taxiId; // which taxi
+    public Long taxiId;
     
     @NotNull
-    public Long hotel2Id; // which hotel in second hotel service
+    public Long hotel2Id;
 }

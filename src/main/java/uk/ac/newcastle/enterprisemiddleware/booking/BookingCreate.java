@@ -4,16 +4,15 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-// DTO for creating bookings - just needs 3 things
 public class BookingCreate {
     
     @NotNull
-    public Long customerId; // which customer
+    public Long customerId;
     
     @NotNull
-    public Long hotelId; // which hotel
+    public Long hotelId;
     
     @NotNull
-    @Future // has to be future date
-    public Date date; // when
+    @Future
+    public Date date;
 }

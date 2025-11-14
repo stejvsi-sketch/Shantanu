@@ -2,7 +2,6 @@ package uk.ac.newcastle.enterprisemiddleware.agent;
 
 import javax.validation.constraints.NotNull;
 
-// DTO for creating agent customer
 public class AgentCustomerCreate {
     @NotNull
     public String name;

@@ -7,7 +7,6 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import java.util.List;
 
-// repository for customer mappings
 @ApplicationScoped
 public class AgentCustomerMappingRepository {
     
@@ -15,33 +14,54 @@ public class AgentCustomerMappingRepository {
     EntityManager em;
     
     public List<AgentCustomerMapping> findAll() {
-        return em.createQuery("SELECT m FROM AgentCustomerMapping m", AgentCustomerMapping.class).getResultList();
+        String q="SELECT m FROM AgentCustomerMapping m";
+        List<AgentCustomerMapping> r=em.createQuery(q, AgentCustomerMapping.class).getResultList();
+        return r;
     }
     
     public AgentCustomerMapping findById(Long id) {
-        return em.find(AgentCustomerMapping.class, id);
+        Long i=id;
+        AgentCustomerMapping m=em.find(AgentCustomerMapping.class, i);
+        return m;
     }
     
     public AgentCustomerMapping findByAgentCustomerId(Long agentCustomerId) {
-        TypedQuery<AgentCustomerMapping> query = em.createQuery(
-            "SELECT m FROM AgentCustomerMapping m WHERE m.agentCustomerId = :id", AgentCustomerMapping.class);
-        query.setParameter("id", agentCustomerId);
+        String qStr="SELECT m FROM AgentCustomerMapping m WHERE m.agentCustomerId = :id";
+        TypedQuery<AgentCustomerMapping> query = em.createQuery(qStr, AgentCustomerMapping.class);
+        Long id=agentCustomerId;
+        query.setParameter("id", id);
         List<AgentCustomerMapping> results = query.getResultList();
-        return results.isEmpty() ? null : results.get(0);
+        boolean isEmpty=results.isEmpty();
+        if(isEmpty){
+            return null;
+        }else{
+            AgentCustomerMapping first=results.get(0);
+            return first;
+        }
     }
     
     @Transactional
     public void persist(AgentCustomerMapping mapping) {
-        em.persist(mapping);
+        AgentCustomerMapping m=mapping;
+        em.persist(m);
     }
     
     @Transactional
     public AgentCustomerMapping merge(AgentCustomerMapping mapping) {
-        return em.merge(mapping);
+        AgentCustomerMapping m=mapping;
+        AgentCustomerMapping result=em.merge(m);
+        return result;
     }
     
     @Transactional
     public void remove(AgentCustomerMapping mapping) {
-        em.remove(em.contains(mapping) ? mapping : em.merge(mapping));
+        boolean has=em.contains(mapping);
+        AgentCustomerMapping toDelete;
+        if(has){
+            toDelete=mapping;
+        }else{
+            toDelete=em.merge(mapping);
+        }
+        em.remove(toDelete);
     }
 }

@@ -7,7 +7,6 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import java.util.List;
 
-// repository for agent customers
 @ApplicationScoped
 public class AgentCustomerRepository {
     
@@ -15,33 +14,53 @@ public class AgentCustomerRepository {
     EntityManager em;
     
     public List<AgentCustomer> findAll() {
-        return em.createQuery("SELECT a FROM AgentCustomer a", AgentCustomer.class).getResultList();
+        String q="SELECT a FROM AgentCustomer a";
+        List<AgentCustomer> list=em.createQuery(q, AgentCustomer.class).getResultList();
+        return list;
     }
     
     public AgentCustomer findById(Long id) {
-        return em.find(AgentCustomer.class, id);
+        AgentCustomer c=em.find(AgentCustomer.class, id);
+        return c;
     }
     
     public AgentCustomer findByEmail(String email) {
-        TypedQuery<AgentCustomer> query = em.createQuery(
-            "SELECT a FROM AgentCustomer a WHERE a.email = :email", AgentCustomer.class);
-        query.setParameter("email", email);
+        String queryStr="SELECT a FROM AgentCustomer a WHERE a.email = :email";
+        TypedQuery<AgentCustomer> query = em.createQuery(queryStr, AgentCustomer.class);
+        String emailParam=email;
+        query.setParameter("email", emailParam);
         List<AgentCustomer> results = query.getResultList();
-        return results.isEmpty() ? null : results.get(0);
+        int size=results.size();
+        boolean empty=results.isEmpty();
+        if(empty){
+            return null;
+        }
+        AgentCustomer first=results.get(0);
+        return first;
     }
     
     @Transactional
     public void persist(AgentCustomer customer) {
-        em.persist(customer);
+        AgentCustomer c=customer;
+        em.persist(c);
     }
     
     @Transactional
     public AgentCustomer merge(AgentCustomer customer) {
-        return em.merge(customer);
+        AgentCustomer c=customer;
+        AgentCustomer merged=em.merge(c);
+        return merged;
     }
     
     @Transactional
     public void remove(AgentCustomer customer) {
-        em.remove(em.contains(customer) ? customer : em.merge(customer));
+        boolean contains=em.contains(customer);
+        AgentCustomer toRemove;
+        if(contains){
+            toRemove=customer;
+        }else{
+            toRemove=em.merge(customer);
+        }
+        em.remove(toRemove);
     }
 }

@@ -1,18 +1,20 @@
 package uk.ac.newcastle.enterprisemiddleware.agent;
 
-// DTO for creating customer in downstream services
 public class DownstreamCustomerCreate {
     public String name;
     public String email;
     public String phoneNumber;
-    public String phonenumber; // some services use this
+    public String phonenumber;
     
     public DownstreamCustomerCreate() {}
     
     public DownstreamCustomerCreate(String name, String email, String phonenumber) {
-        this.name = name;
-        this.email = email;
-        this.phoneNumber = phonenumber;
-        this.phonenumber = phonenumber;
+        String n=name;
+        String e=email;
+        String p=phonenumber;
+        this.name = n;
+        this.email = e;
+        this.phoneNumber = p;
+        this.phonenumber = p;
     }
 }

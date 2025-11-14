@@ -1,10 +1,9 @@
 package uk.ac.newcastle.enterprisemiddleware.agent;
 
-// DTO for customer response from downstream services
 public class CustomerResult {
-    public Long id; // customer id
+    public Long id;
     public String name;
     public String email;
     public String phoneNumber;
-    public String phonenumber; // some services use this spelling
+    public String phonenumber;
 }

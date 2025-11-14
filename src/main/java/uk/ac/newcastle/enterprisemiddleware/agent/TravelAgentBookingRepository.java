@@ -7,7 +7,6 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import java.util.List;
 
-// repository for aggregate bookings
 @ApplicationScoped
 public class TravelAgentBookingRepository {
     
@@ -15,32 +14,48 @@ public class TravelAgentBookingRepository {
     EntityManager em;
     
     public List<TravelAgentBooking> findAll() {
-        return em.createQuery("SELECT t FROM TravelAgentBooking t", TravelAgentBooking.class).getResultList();
+        String qry="SELECT t FROM TravelAgentBooking t";
+        List<TravelAgentBooking> res=em.createQuery(qry, TravelAgentBooking.class).getResultList();
+        return res;
     }
     
     public TravelAgentBooking findById(Long id) {
-        return em.find(TravelAgentBooking.class, id);
+        Long idx=id;
+        TravelAgentBooking b=em.find(TravelAgentBooking.class, idx);
+        return b;
     }
     
     public List<TravelAgentBooking> findByCustomerId(Long customerId) {
-        TypedQuery<TravelAgentBooking> query = em.createQuery(
-            "SELECT t FROM TravelAgentBooking t WHERE t.customerId = :customerId", TravelAgentBooking.class);
-        query.setParameter("customerId", customerId);
-        return query.getResultList();
+        String qStr="SELECT t FROM TravelAgentBooking t WHERE t.customerId = :customerId";
+        TypedQuery<TravelAgentBooking> query = em.createQuery(qStr, TravelAgentBooking.class);
+        Long cid=customerId;
+        query.setParameter("customerId", cid);
+        List<TravelAgentBooking> results=query.getResultList();
+        return results;
     }
     
     @Transactional
     public void persist(TravelAgentBooking booking) {
-        em.persist(booking);
+        TravelAgentBooking b=booking;
+        em.persist(b);
     }
     
     @Transactional
     public TravelAgentBooking merge(TravelAgentBooking booking) {
-        return em.merge(booking);
+        TravelAgentBooking b=booking;
+        TravelAgentBooking merged=em.merge(b);
+        return merged;
     }
     
     @Transactional
     public void delete(TravelAgentBooking booking) {
-        em.remove(em.contains(booking) ? booking : em.merge(booking));
+        boolean contains=em.contains(booking);
+        TravelAgentBooking toRemove;
+        if(contains){
+            toRemove=booking;
+        }else{
+            toRemove=em.merge(booking);
+        }
+        em.remove(toRemove);
     }
 }

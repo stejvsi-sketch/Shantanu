@@ -1,0 +1,17 @@
+target/
+*.class
+*.log
+*.jar
+*.war
+*.ear
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+*.DS_Store
+*~
+.mvn/
+mvnw
+mvnw.cmd

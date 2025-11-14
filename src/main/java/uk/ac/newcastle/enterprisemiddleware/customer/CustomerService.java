@@ -10,63 +10,83 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// customer service
+// this is the service class for customers
+// handles all the customer stuff
 @ApplicationScoped
 public class CustomerService {
 
     @Inject
-    Validator validator;
+    Validator validator; // for validation
 
     @Inject
-    CustomerRepository repository;
+    CustomerRepository repository; // repository object
 
+    // get all customers
     public List<Customer> findAllOrderedByName() {
+        //System.out.println("Finding all customers");
         List<Customer> customers = repository.findAllOrderedByName();
         return customers;
     }
 
+    // find customer by id
     public Customer findById(Long id) {
         Customer customer = repository.findById(id);
         return customer;
     }
 
+    // find by email
     public Customer findByEmail(String email) {
         Customer customer = repository.findByEmail(email);
         return customer;
     }
 
+    // create new customer
     @Transactional
     public Customer create(Customer customer) throws Exception {
-        // validate first
+        //System.out.println("Creating customer: " + customer.getEmail());
+        
+        // do validation
         Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
-        if(!violations.isEmpty()) {
+        if(violations.size() > 0) {
             throw new ConstraintViolationException(new HashSet<>(violations));
         }
         
-        // check email not already used
-        Customer existingCustomer = repository.findByEmail(customer.getEmail());
+        // check if email already exists in database
+        String emailToCheck = customer.getEmail();
+        Customer existingCustomer = repository.findByEmail(emailToCheck);
         if(existingCustomer != null) {
-            if(customer.getId() == null || !existingCustomer.getId().equals(customer.getId())) {
+            // email is already there
+            Long customerId = customer.getId();
+            if(customerId == null) {
+                throw new Exception("Email already exists");
+            }
+            Long existingId = existingCustomer.getId();
+            if(!existingId.equals(customerId)) {
                 throw new Exception("Email already exists");
             }
         }
 
         Customer createdCustomer = repository.create(customer);
+        //System.out.println("Customer created with id: " + createdCustomer.getId());
         return createdCustomer;
     }
 
+    // update customer
     @Transactional
     public Customer update(Customer customer) throws Exception {
-        // validate
+        // validate the customer
         Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
-        if(!violations.isEmpty()) {
+        if(violations.size() > 0) {
             throw new ConstraintViolationException(new HashSet<>(violations));
         }
         
-        // check email
-        Customer existingCustomer = repository.findByEmail(customer.getEmail());
+        // check if email is taken by another customer
+        String email = customer.getEmail();
+        Customer existingCustomer = repository.findByEmail(email);
         if(existingCustomer != null) {
-            if(!existingCustomer.getId().equals(customer.getId())) {
+            Long existingId = existingCustomer.getId();
+            Long currentId = customer.getId();
+            if(!existingId.equals(currentId)) {
                 throw new Exception("Email already exists");
             }
         }

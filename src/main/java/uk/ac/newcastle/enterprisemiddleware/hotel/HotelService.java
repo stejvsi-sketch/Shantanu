@@ -10,62 +10,87 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+// hotel service class
 @ApplicationScoped
 public class HotelService {
 
     @Inject
-    Validator validator;
+    Validator validator; // for validating hotels
 
     @Inject
-    HotelRepository repository;
+    HotelRepository repository; // repository for hotels
 
+    // get all hotels from database
     public List<Hotel> findAllOrderedByName() {
+        //System.out.println("Finding all hotels");
         List<Hotel> hotels = repository.findAllOrderedByName();
         return hotels;
     }
 
+    // find hotel by its id
     public Hotel findById(Long id) {
         Hotel hotel = repository.findById(id);
         return hotel;
     }
 
+    // find hotel by phone number
     public Hotel findByPhoneNumber(String phoneNumber) {
         Hotel hotel = repository.findByPhoneNumber(phoneNumber);
         return hotel;
     }
 
+    // create new hotel in system
     @Transactional
     public Hotel create(Hotel hotel) throws Exception {
-        // validation
+        //System.out.println("Creating hotel: " + hotel.getName());
+        
+        // do validation on hotel
         Set<ConstraintViolation<Hotel>> violations = validator.validate(hotel);
-        if(!violations.isEmpty()) {
+        int violationCount = violations.size();
+        if(violationCount > 0) {
             throw new ConstraintViolationException(new HashSet<>(violations));
         }
         
-        // check phone number
-        Hotel existingHotel = repository.findByPhoneNumber(hotel.getPhoneNumber());
+        // check if phone number is already used by another hotel
+        String phoneNumber = hotel.getPhoneNumber();
+        Hotel existingHotel = repository.findByPhoneNumber(phoneNumber);
         if(existingHotel != null) {
-            if(hotel.getId() == null || !existingHotel.getId().equals(hotel.getId())) {
+            // phone number is already in database
+            Long hotelId = hotel.getId();
+            if(hotelId == null) {
+                // new hotel, so phone number is duplicate
                 throw new Exception("Phone number already exists");
+            } else {
+                // updating hotel
+                Long existingHotelId = existingHotel.getId();
+                if(!existingHotelId.equals(hotelId)) {
+                    throw new Exception("Phone number already exists");
+                }
             }
         }
 
         Hotel createdHotel = repository.create(hotel);
+        //System.out.println("Hotel created with id: " + createdHotel.getId());
         return createdHotel;
     }
 
+    // update hotel information
     @Transactional
     public Hotel update(Hotel hotel) throws Exception {
-        // validation
+        // validate hotel data
         Set<ConstraintViolation<Hotel>> violations = validator.validate(hotel);
-        if(!violations.isEmpty()) {
+        int numViolations = violations.size();
+        if(numViolations > 0) {
             throw new ConstraintViolationException(new HashSet<>(violations));
         }
         
-        // check phone number
-        Hotel existingHotel = repository.findByPhoneNumber(hotel.getPhoneNumber());
+        // make sure phone number not used by other hotel
+        String phoneNum = hotel.getPhoneNumber();
+        Hotel existingHotel = repository.findByPhoneNumber(phoneNum);
         if(existingHotel != null) {
-            if(!existingHotel.getId().equals(hotel.getId())) {
+            Long existingId = existingHotel.getId();
+            Long currentId = hotel.getId();
+            if(!existingId.equals(currentId)) {
                 throw new Exception("Phone number already exists");
             }
         }

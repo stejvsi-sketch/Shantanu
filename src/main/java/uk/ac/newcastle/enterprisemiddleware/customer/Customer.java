@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-// Customer entity - holds customer data
+// Customer class - this is the entity for customers in database
+// represents a customer who can make bookings
 @Entity
 @Table(name = "customer", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 @NamedQueries({
@@ -21,39 +22,39 @@ import java.util.Objects;
     @NamedQuery(name = Customer.FIND_BY_EMAIL, query = "SELECT c FROM Customer c WHERE c.email = :email")
 })
 public class Customer implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; // for serialization
     
-    // query constants
+    // constants for named queries
     public static final String FIND_ALL = "Customer.findAll";
     public static final String FIND_BY_EMAIL = "Customer.findByEmail";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id // primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generated
+    private Long id; // customer id
 
-    @NotNull
-    @Size(min = 1, max = 50)
-    @Pattern(regexp = "[A-Za-z-' ]+", message = "Name must contain only letters, spaces, hyphens, and apostrophes")
-    @Column(name = "name")
-    private String name;
+    @NotNull // cant be null
+    @Size(min = 1, max = 50) // name length
+    @Pattern(regexp = "[A-Za-z-' ]+", message = "Name must contain only letters, spaces, hyphens, and apostrophes") // regex for name
+    @Column(name = "name") // database column
+    private String name; // customer name
 
-    @NotNull
-    @Email(message = "The email address must be in the format user@domain.com") // email validation from tutorial
-    @Column(name = "email")
-    private String email;
+    @NotNull // required field
+    @Email(message = "The email address must be in the format user@domain.com") // email validator
+    @Column(name = "email") // column name in db
+    private String email; // customer email
 
-    @NotNull
-    @Pattern(regexp = "^0[0-9]{10}$", message = "Phone number must start with 0 and be 11 digits long") //UK phone format
-    @Column(name = "phone_number")
-    private String phoneNumber;
+    @NotNull // cant be null
+    @Pattern(regexp = "^0[0-9]{10}$", message = "Phone number must start with 0 and be 11 digits long") // UK phone number format
+    @Column(name = "phone_number") // database column name
+    private String phoneNumber; // customer phone number
 
-    @JsonIgnore  // don't show bookings in customer json response
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Booking> bookings = new ArrayList<>();
+    @JsonIgnore  // dont include bookings when converting to json
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.REMOVE, orphanRemoval = true) // one customer has many bookings
+    private List<Booking> bookings = new ArrayList<>(); // list of bookings
 
 
 
-    // getters and setters
+    // getter for id
     public Long getId() {
         return id;
     }
@@ -94,18 +95,25 @@ public class Customer implements Serializable {
         this.bookings = bookings;
     }
 
+    // equals method - compares customers based on email
+    // needed for JPA to work properly
     @Override
     public boolean equals(Object o) {
+        // check if same object
         if(this == o) {
             return true;
         }
+        // check if null
         if(o == null) {
             return false;
         }
+        // check if its a Customer object
         if(!(o instanceof Customer)) {
             return false;
         }
+        // cast to Customer
         Customer customer = (Customer) o;
+        // compare emails
         if(email == null) {
             if(customer.email != null) {
                 return false;
@@ -116,11 +124,12 @@ public class Customer implements Serializable {
         return true;
     }
 
+    // hashcode method - based on email
     @Override
     public int hashCode() {
-        int result = 17;
+        int result = 17; // prime number
         if(email != null) {
-            result = 31 * result + email.hashCode();
+            result = 31 * result + email.hashCode(); // another prime number
         }
         return result;
     }

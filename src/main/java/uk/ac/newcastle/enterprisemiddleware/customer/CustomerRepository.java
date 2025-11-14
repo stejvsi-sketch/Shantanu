@@ -16,34 +16,56 @@ public class CustomerRepository {
     private Logger log = Logger.getLogger(CustomerRepository.class.getName());
 
     public List<Customer> findAllOrderedByName() {
-        TypedQuery<Customer> query = em.createNamedQuery(Customer.FIND_ALL, Customer.class);
-        return query.getResultList();
+        String qName=Customer.FIND_ALL;
+        TypedQuery<Customer> query = em.createNamedQuery(qName, Customer.class);
+        List<Customer> results=query.getResultList();
+        return results;
     }
 
     public Customer findById(Long id) {
-        return em.find(Customer.class, id);
+        Long custId=id;
+        Customer c=em.find(Customer.class, custId);
+        return c;
     }
 
     public Customer findByEmail(String email) {
-        TypedQuery<Customer> query = em.createNamedQuery(Customer.FIND_BY_EMAIL, Customer.class);
-        query.setParameter("email", email);
-        return query.getResultList().stream().findFirst().orElse(null);
+        String qName=Customer.FIND_BY_EMAIL;
+        TypedQuery<Customer> query = em.createNamedQuery(qName, Customer.class);
+        String emailParam=email;
+        query.setParameter("email", emailParam);
+        List<Customer> list=query.getResultList();
+        Customer result=null;
+        if(list.size()>0){
+            result=list.get(0);
+        }
+        return result;
     }
 
     public Customer create(Customer customer) {
-        log.info("Creating customer: " + customer.getEmail());
-        em.persist(customer);
-        return customer;
+        String email=customer.getEmail();
+        String msg="Creating customer: " + email;
+        log.info(msg);
+        Customer c=customer;
+        em.persist(c);
+        return c;
     }
 
     public Customer update(Customer customer) {
-        log.info("Updating customer: " + customer.getEmail());
-        return em.merge(customer);
+        String email=customer.getEmail();
+        String msg="Updating customer: " + email;
+        log.info(msg);
+        Customer c=customer;
+        Customer updated=em.merge(c);
+        return updated;
     }
 
     public void delete(Customer customer) {
-        log.info("Deleting customer: " + customer.getEmail());
-        Customer managedCustomer = em.merge(customer);
-        em.remove(managedCustomer);
+        String email=customer.getEmail();
+        String msg="Deleting customer: " + email;
+        log.info(msg);
+        Customer c=customer;
+        Customer managedCustomer = em.merge(c);
+        Customer toDelete=managedCustomer;
+        em.remove(toDelete);
     }
 }

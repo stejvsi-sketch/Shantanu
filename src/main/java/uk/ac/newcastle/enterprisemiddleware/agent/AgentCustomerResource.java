@@ -39,11 +39,12 @@ public class AgentCustomerResource {
     @RestClient
     Hotel2Client hotel2Client;
     
-    // get all agent customers
     @GET
     @Operation(summary = "List all agent customers")
     public List<AgentCustomer> list() {
-        return agentCustomers.findAll();
+        List<AgentCustomer> allCustomers=agentCustomers.findAll();
+        List<AgentCustomer> result=allCustomers;
+        return result;
     }
     
     // create agent customer and propagate to downstream services
@@ -51,119 +52,159 @@ public class AgentCustomerResource {
     @Transactional
     @Operation(summary = "Create agent customer and propagate to downstream services")
     public Response create(AgentCustomerCreate req) {
-        // validate
-        if(req.name == null || req.name.isBlank()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                .entity(Map.of("error", "name is required")).build();
+        String name=req.name;
+        boolean nameOk=true;
+        if(name==null){ nameOk=false; }
+        if(name!=null && name.isBlank()){ nameOk=false; }
+        if(!nameOk){
+            Map<String,Object> err=Map.of("error", "name is required");
+            Response.Status bad=Response.Status.BAD_REQUEST;
+            return Response.status(bad).entity(err).build();
         }
-        if(req.email == null || req.email.isBlank()) {
+        String email=req.email;
+        if(email==null || email.isBlank()){
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity(Map.of("error", "email is required")).build();
         }
-        if(req.phonenumber == null || req.phonenumber.isBlank()) {
+        String phone=req.phonenumber;
+        boolean phoneOk=false;
+        if(phone!=null && !phone.isBlank()){ phoneOk=true; }
+        if(!phoneOk){
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity(Map.of("error", "phonenumber is required")).build();
         }
         
-        // check if customer already exists
-        AgentCustomer existing = agentCustomers.findByEmail(req.email);
-        if(existing != null) {
-            return Response.status(Response.Status.CONFLICT)
-                .entity(Map.of("error", "Customer with this email already exists")).build();
+        String reqEmail=req.email;
+        AgentCustomer existing = agentCustomers.findByEmail(reqEmail);
+        AgentCustomer found=existing;
+        boolean alreadyExists=false;
+        if(found!=null){ alreadyExists=true; }
+        if(alreadyExists){
+            Map<String,Object> errMap=Map.of("error", "Customer with this email already exists");
+            Response.Status conflict=Response.Status.CONFLICT;
+            Response r=Response.status(conflict).entity(errMap).build();
+            return r;
         }
         
-        // create agent customer
         AgentCustomer agentCustomer = new AgentCustomer();
-        agentCustomer.setName(req.name);
-        agentCustomer.setEmail(req.email);
-        agentCustomer.setPhonenumber(req.phonenumber);
-        agentCustomers.persist(agentCustomer);
+        String n=req.name;
+        agentCustomer.setName(n);
+        String e=req.email;
+        agentCustomer.setEmail(e);
+        String p=req.phonenumber;
+        agentCustomer.setPhonenumber(p);
+        AgentCustomer cust=agentCustomer;
+        agentCustomers.persist(cust);
         
-        // create customer mapping
         AgentCustomerMapping mapping = new AgentCustomerMapping();
-        mapping.setAgentCustomerId(agentCustomer.getId());
+        Long custId=agentCustomer.getId();
+        mapping.setAgentCustomerId(custId);
         
-        // propagate to hotel service
         try {
-            DownstreamCustomerCreate hotelReq = new DownstreamCustomerCreate(req.name, req.email, req.phonenumber);
+            String n1=req.name;
+            String e1=req.email;
+            String p1=req.phonenumber;
+            DownstreamCustomerCreate hotelReq = new DownstreamCustomerCreate(n1, e1, p1);
             CustomerResult hotelResult = hotelClient.createCustomer(hotelReq);
-            mapping.setHotelCustomerId(hotelResult.id);
-        } catch(WebApplicationException e) {
-            if(e.getResponse().getStatus() == 409) {
-                // customer exists - find it
-                Long id = findExistingCustomer(hotelClient, req.email);
+            Long hid=hotelResult.id;
+            mapping.setHotelCustomerId(hid);
+        } catch(WebApplicationException wae) {
+            int status=wae.getResponse().getStatus();
+            if(status == 409) {
+                String email1=req.email;
+                Long id = findExistingCustomer(hotelClient, email1);
                 mapping.setHotelCustomerId(id);
             }
-        } catch(Exception e) {
-            // ignore - will be null
-        }
+        } catch(Exception ex) {}
         
-        // propagate to taxi service
         try {
-            DownstreamCustomerCreate taxiReq = new DownstreamCustomerCreate(req.name, req.email, req.phonenumber);
+            String n2=req.name;
+            String e2=req.email;
+            String p2=req.phonenumber;
+            DownstreamCustomerCreate taxiReq = new DownstreamCustomerCreate(n2, e2, p2);
             CustomerResult taxiResult = taxiClient.createCustomer(taxiReq);
-            mapping.setTaxiCustomerId(taxiResult.id);
-        } catch(WebApplicationException e) {
-            if(e.getResponse().getStatus() == 409) {
+            Long tid=taxiResult.id;
+            mapping.setTaxiCustomerId(tid);
+        } catch(WebApplicationException wae2) {
+            javax.ws.rs.core.Response resp=wae2.getResponse();
+            int stat=resp.getStatus();
+            if(stat == 409) {
                 Long id = findExistingCustomer(taxiClient, req.email);
                 mapping.setTaxiCustomerId(id);
             }
-        } catch(Exception e) {
-            // ignore
-        }
+        } catch(Exception ex2) {}
         
-        // propagate to hotel2 service
         try {
-            DownstreamCustomerCreate hotel2Req = new DownstreamCustomerCreate(req.name, req.email, req.phonenumber);
+            String n3=req.name;
+            String e3=req.email;
+            String p3=req.phonenumber;
+            DownstreamCustomerCreate hotel2Req = new DownstreamCustomerCreate(n3, e3, p3);
             CustomerResult hotel2Result = hotel2Client.createCustomer(hotel2Req);
-            mapping.setHotel2CustomerId(hotel2Result.id);
-        } catch(WebApplicationException e) {
-            if(e.getResponse().getStatus() == 409) {
+            Long h2id=hotel2Result.id;
+            mapping.setHotel2CustomerId(h2id);
+        } catch(WebApplicationException wae3) {
+            javax.ws.rs.core.Response r=wae3.getResponse();
+            if(r.getStatus() == 409) {
                 Long id = findExistingCustomer(hotel2Client, req.email);
                 mapping.setHotel2CustomerId(id);
             }
-        } catch(Exception e) {
-            // ignore
-        }
+        } catch(Exception ex3) {}
         
-        customerMappings.persist(mapping);
+        AgentCustomerMapping map=mapping;
+        customerMappings.persist(map);
         
-        // return response
         Map<String, Object> result = new HashMap<>();
-        result.put("id", agentCustomer.getId());
-        result.put("name", agentCustomer.getName());
-        result.put("email", agentCustomer.getEmail());
-        result.put("phonenumber", agentCustomer.getPhonenumber());
+        Long id1=agentCustomer.getId();
+        result.put("id", id1);
+        String name1=agentCustomer.getName();
+        result.put("name", name1);
+        String email1=agentCustomer.getEmail();
+        result.put("email", email1);
+        String phone1=agentCustomer.getPhonenumber();
+        result.put("phonenumber", phone1);
+        Long hCid=mapping.getHotelCustomerId();
+        Long tCid=mapping.getTaxiCustomerId();
+        Long h2Cid=mapping.getHotel2CustomerId();
         result.put("mapping", Map.of(
-            "hotelCustomerId", mapping.getHotelCustomerId(),
-            "taxiCustomerId", mapping.getTaxiCustomerId(),
-            "hotel2CustomerId", mapping.getHotel2CustomerId()
+            "hotelCustomerId", hCid,
+            "taxiCustomerId", tCid,
+            "hotel2CustomerId", h2Cid
         ));
         
-        return Response.status(Response.Status.CREATED).entity(result).build();
+        Response.Status created=Response.Status.CREATED;
+        Response resp=Response.status(created).entity(result).build();
+        return resp;
     }
     
-    // helper to find existing customer by email
     private Long findExistingCustomer(Object client, String email) {
         try {
             List<CustomerResult> list;
-            if(client instanceof HotelClient) {
+            boolean isHotel=client instanceof HotelClient;
+            boolean isTaxi=client instanceof TaxiClient;
+            boolean isHotel2=client instanceof Hotel2Client;
+            if(isHotel) {
                 HotelClient hc = (HotelClient) client;
                 list = hc.listCustomers();
-            } else if(client instanceof TaxiClient) {
+            } else if(isTaxi) {
                 TaxiClient tc = (TaxiClient) client;
                 list = tc.listCustomers();
-            } else if(client instanceof Hotel2Client) {
+            } else if(isHotel2) {
                 Hotel2Client h2c = (Hotel2Client) client;
                 list = h2c.listCustomers();
             } else {
                 return null;
             }
-            return list.stream()
-                .filter(c -> email.equalsIgnoreCase(c.email))
-                .map(c -> c.id)
-                .findFirst()
-                .orElse(null);
+            String emailToFind=email;
+            for(int i=0; i<list.size(); i++){
+                CustomerResult c=list.get(i);
+                String cEmail=c.email;
+                boolean match=emailToFind.equalsIgnoreCase(cEmail);
+                if(match){
+                    Long cid=c.id;
+                    return cid;
+                }
+            }
+            return null;
         } catch(Exception e) {
             return null;
         }

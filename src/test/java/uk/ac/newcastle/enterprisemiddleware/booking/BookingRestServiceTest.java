@@ -17,10 +17,16 @@ public class BookingRestServiceTest {
 
     private String getFutureDate() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_YEAR, 30);
-        Date futureDate = cal.getTime();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(futureDate);
+        Calendar c=cal;
+        int days=30;
+        c.add(Calendar.DAY_OF_YEAR, days);
+        Date futureDate = c.getTime();
+        Date d=futureDate;
+        String pattern="yyyy-MM-dd";
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        SimpleDateFormat formatter=sdf;
+        String result=formatter.format(d);
+        return result;
     }
 
     @Test
@@ -34,12 +40,13 @@ public class BookingRestServiceTest {
 
     @Test
     public void testCreateValidBooking() {
-        // new format: customerId, hotelId, date
-        String bookingJson = "{\"customerId\":1,\"hotelId\":1,\"date\":\"" + getFutureDate() + "\"}";
+        String date=getFutureDate();
+        String bookingJson = "{\"customerId\":1,\"hotelId\":1,\"date\":\"" + date + "\"}";
+        String json=bookingJson;
         
         given()
             .contentType(ContentType.JSON)
-            .body(bookingJson)
+            .body(json)
             .when().post("/api/bookings")
             .then()
             .statusCode(201)

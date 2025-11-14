@@ -17,40 +17,58 @@ public class BookingRepository {
     private Logger log = Logger.getLogger(BookingRepository.class.getName());
 
     public List<Booking> findAllOrderedByDate() {
-        TypedQuery<Booking> query = em.createNamedQuery(Booking.FIND_ALL, Booking.class);
-        return query.getResultList();
+        String qName=Booking.FIND_ALL;
+        TypedQuery<Booking> query = em.createNamedQuery(qName, Booking.class);
+        List<Booking> results=query.getResultList();
+        return results;
     }
 
     public Booking findById(Long id) {
-        return em.find(Booking.class, id);
+        Long bookingId=id;
+        Booking b=em.find(Booking.class, bookingId);
+        return b;
     }
 
     public List<Booking> findByCustomerId(Long customerId) {
-        TypedQuery<Booking> query = em.createNamedQuery(Booking.FIND_BY_CUSTOMER, Booking.class);
-        query.setParameter("customerId", customerId);
-        return query.getResultList();
+        String qName=Booking.FIND_BY_CUSTOMER;
+        TypedQuery<Booking> query = em.createNamedQuery(qName, Booking.class);
+        Long cid=customerId;
+        query.setParameter("customerId", cid);
+        List<Booking> results=query.getResultList();
+        return results;
     }
 
     public List<Booking> findByHotelId(Long hotelId) {
-        TypedQuery<Booking> query = em.createNamedQuery(Booking.FIND_BY_HOTEL, Booking.class);
-        query.setParameter("hotelId", hotelId);
-        return query.getResultList();
+        String qName=Booking.FIND_BY_HOTEL;
+        TypedQuery<Booking> query = em.createNamedQuery(qName, Booking.class);
+        Long hid=hotelId;
+        query.setParameter("hotelId", hid);
+        List<Booking> results=query.getResultList();
+        return results;
     }
 
     public Booking create(Booking booking) {
-        log.info("Creating booking");
-        em.persist(booking);
-        return booking;
+        String msg="Creating booking";
+        log.info(msg);
+        Booking b=booking;
+        em.persist(b);
+        return b;
     }
 
     public Booking update(Booking booking) {
-        log.info("Updating booking");
-        return em.merge(booking);
+        String msg="Updating booking";
+        log.info(msg);
+        Booking b=booking;
+        Booking updated=em.merge(b);
+        return updated;
     }
 
     public void delete(Booking booking) {
-        log.info("Deleting booking");
-        Booking managedBooking = em.merge(booking);
-        em.remove(managedBooking);
+        String msg="Deleting booking";
+        log.info(msg);
+        Booking b=booking;
+        Booking managedBooking = em.merge(b);
+        Booking toDelete=managedBooking;
+        em.remove(toDelete);
     }
 }

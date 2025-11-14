@@ -53,10 +53,26 @@ public class GuestBookingRestService {
         @APIResponse(responseCode = "500", description = "Transaction failed")
     })
     public Response createGuestBooking(GuestBooking guestBooking) {
-        if (guestBooking == null || guestBooking.getCustomer() == null || guestBooking.getBooking() == null) {
+        GuestBooking gb=guestBooking;
+        boolean isNull=false;
+        if(gb==null){ isNull=true; }
+        Customer c=null;
+        Booking b=null;
+        if(!isNull){
+            c=gb.getCustomer();
+            b=gb.getBooking();
+        }
+        boolean cNull=false;
+        boolean bNull=false;
+        if(c==null){ cNull=true; }
+        if(b==null){ bNull=true; }
+        if(isNull || cNull || bNull) {
             Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("error", "Both customer and booking data are required");
-            return Response.status(Response.Status.BAD_REQUEST).entity(responseObj).build();
+            String err="Both customer and booking data are required";
+            responseObj.put("error", err);
+            Response.Status bad=Response.Status.BAD_REQUEST;
+            Response r=Response.status(bad).entity(responseObj).build();
+            return r;
         }
 
         Customer customer = guestBooking.getCustomer();

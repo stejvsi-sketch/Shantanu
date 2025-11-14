@@ -3,11 +3,9 @@ package uk.ac.newcastle.enterprisemiddleware;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Contact;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
-
 import javax.ws.rs.ApplicationPath;
 
-// Main application class for JAX-RS
-@ApplicationPath("/api")
+@ApplicationPath("/")
 @OpenAPIDefinition(
     info = @Info(
         title = "Hotel Booking Service API",
@@ -20,5 +18,4 @@ import javax.ws.rs.ApplicationPath;
     )
 )
 public class Application extends javax.ws.rs.core.Application {
-    // no additional config needed for now
 }

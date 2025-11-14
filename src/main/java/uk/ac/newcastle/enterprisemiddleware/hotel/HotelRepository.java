@@ -16,34 +16,56 @@ public class HotelRepository {
     private Logger log = Logger.getLogger(HotelRepository.class.getName());
 
     public List<Hotel> findAllOrderedByName() {
-        TypedQuery<Hotel> query = em.createNamedQuery(Hotel.FIND_ALL, Hotel.class);
-        return query.getResultList();
+        String qName=Hotel.FIND_ALL;
+        TypedQuery<Hotel> query = em.createNamedQuery(qName, Hotel.class);
+        List<Hotel> results=query.getResultList();
+        return results;
     }
 
     public Hotel findById(Long id) {
-        return em.find(Hotel.class, id);
+        Long hotelId=id;
+        Hotel h=em.find(Hotel.class, hotelId);
+        return h;
     }
 
     public Hotel findByPhoneNumber(String phoneNumber) {
-        TypedQuery<Hotel> query = em.createNamedQuery(Hotel.FIND_BY_PHONE, Hotel.class);
-        query.setParameter("phoneNumber", phoneNumber);
-        return query.getResultList().stream().findFirst().orElse(null);
+        String qName=Hotel.FIND_BY_PHONE;
+        TypedQuery<Hotel> query = em.createNamedQuery(qName, Hotel.class);
+        String phone=phoneNumber;
+        query.setParameter("phoneNumber", phone);
+        List<Hotel> list=query.getResultList();
+        Hotel result=null;
+        if(list.size()>0){
+            result=list.get(0);
+        }
+        return result;
     }
 
     public Hotel create(Hotel hotel) {
-        log.info("Creating hotel: " + hotel.getName());
-        em.persist(hotel);
-        return hotel;
+        String name=hotel.getName();
+        String msg="Creating hotel: " + name;
+        log.info(msg);
+        Hotel h=hotel;
+        em.persist(h);
+        return h;
     }
 
     public Hotel update(Hotel hotel) {
-        log.info("Updating hotel: " + hotel.getName());
-        return em.merge(hotel);
+        String name=hotel.getName();
+        String msg="Updating hotel: " + name;
+        log.info(msg);
+        Hotel h=hotel;
+        Hotel updated=em.merge(h);
+        return updated;
     }
 
     public void delete(Hotel hotel) {
-        log.info("Deleting hotel: " + hotel.getName());
-        Hotel managedHotel = em.merge(hotel);
-        em.remove(managedHotel);
+        String name=hotel.getName();
+        String msg="Deleting hotel: " + name;
+        log.info(msg);
+        Hotel h=hotel;
+        Hotel managedHotel = em.merge(h);
+        Hotel toDelete=managedHotel;
+        em.remove(toDelete);
     }
 }

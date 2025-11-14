@@ -65,10 +65,18 @@ public class TravelAgentResource {
     @APIResponse(responseCode = "200", description = "List of bookings")
     public List<TravelAgentBooking> list(@QueryParam("customerId") Long customerId) {
         //System.out.println("Getting aggregate bookings");
-        if(customerId != null) {
-            return repository.findByCustomerId(customerId);
+        Long cid=customerId;
+        boolean hasCustomerId=false;
+        if(cid!=null){
+            hasCustomerId=true;
         }
-        return repository.findAll();
+        List<TravelAgentBooking> result;
+        if(hasCustomerId){
+            result=repository.findByCustomerId(cid);
+        }else{
+            result=repository.findAll();
+        }
+        return result;
     }
     
     // create aggregate booking - books across 3 services
@@ -81,37 +89,77 @@ public class TravelAgentResource {
     public Response create(@Valid TravelAgentRequest req) {
         //System.out.println("Creating aggregate booking");
         Map<String, Object> error = new HashMap<>();
+        Map<String, Object> err=error;
         
-        // validate request
         String validation = validate(req);
-        if(validation != null) {
-            error.put("message", validation);
-            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+        String v=validation;
+        boolean isValid=true;
+        if(v!=null){
+            isValid=false;
+        }
+        if(!isValid){
+            err.put("message", v);
+            Response.Status badReq=Response.Status.BAD_REQUEST;
+            Response r=Response.status(badReq).entity(err).build();
+            return r;
         }
         
-        // get customer mapping
-        AgentCustomerMapping map = customerMappings.findByAgentCustomerId(req.customerId);
-        if(map == null) {
+        Long reqCustId=req.customerId;
+        AgentCustomerMapping map = customerMappings.findByAgentCustomerId(reqCustId);
+        AgentCustomerMapping mapping=map;
+        boolean foundMap=true;
+        if(mapping==null){
+            foundMap=false;
+        }
+        if(!foundMap){
             Map<String, Object> details = new HashMap<>();
-            details.put("message", "Customer must be created via agent before booking");
-            details.put("customerId", req.customerId);
-            return Response.status(422).entity(details).build();
+            String msg="Customer must be created via agent before booking";
+            details.put("message", msg);
+            Long cId=req.customerId;
+            details.put("customerId", cId);
+            int status=422;
+            Response resp=Response.status(status).entity(details).build();
+            return resp;
         }
         
-        // check all mappings exist
         Long hotelCustomerId = map.getHotelCustomerId();
+        Long hCustId=hotelCustomerId;
         Long taxiCustomerId = map.getTaxiCustomerId();
+        Long tCustId=taxiCustomerId;
         Long hotel2CustomerId = map.getHotel2CustomerId();
+        Long h2CustId=hotel2CustomerId;
         
-        if(hotelCustomerId == null || taxiCustomerId == null || hotel2CustomerId == null) {
+        boolean allExist=true;
+        if(hCustId==null){
+            allExist=false;
+        }
+        if(tCustId==null){
+            allExist=false;
+        }
+        if(h2CustId==null){
+            allExist=false;
+        }
+        if(!allExist){
             Map<String, Object> details = new HashMap<>();
-            details.put("message", "Downstream customers not provisioned for all services");
+            String message="Downstream customers not provisioned for all services";
+            details.put("message", message);
             List<String> missing = new ArrayList<>();
-            if(hotelCustomerId == null) missing.add("hotel");
-            if(taxiCustomerId == null) missing.add("taxi");
-            if(hotel2CustomerId == null) missing.add("hotel2");
+            if(hCustId==null){
+                String h="hotel";
+                missing.add(h);
+            }
+            if(tCustId==null){
+                String t="taxi";
+                missing.add(t);
+            }
+            if(h2CustId==null){
+                String h2="hotel2";
+                missing.add(h2);
+            }
             details.put("missing", missing);
-            return Response.status(422).entity(details).build();
+            int stat=422;
+            Response response=Response.status(stat).entity(details).build();
+            return response;
         }
         
         Long hotelBookingId = null;
@@ -119,67 +167,124 @@ public class TravelAgentResource {
         Long hotel2BookingId = null;
         
         try {
-            // call hotel service (our service)
             HotelBookingCreate hotelReq = new HotelBookingCreate();
-            hotelReq.customerId = hotelCustomerId;
-            hotelReq.hotelId = req.hotelId;
-            hotelReq.date = req.date;
+            Long hCid=hotelCustomerId;
+            hotelReq.customerId = hCid;
+            Long hId=req.hotelId;
+            hotelReq.hotelId = hId;
+            java.util.Date d=req.date;
+            hotelReq.date = d;
             BookingResult hotelResult = hotelClient.createBooking(hotelReq);
-            hotelBookingId = hotelResult != null ? hotelResult.id : null;
+            BookingResult hRes=hotelResult;
+            boolean hResNull=false;
+            if(hRes==null){
+                hResNull=true;
+            }
+            if(hResNull){
+                hotelBookingId=null;
+            }else{
+                Long hBid=hRes.id;
+                hotelBookingId=hBid;
+            }
             //System.out.println("Hotel booking created: " + hotelBookingId);
             
-            // call taxi service
             TaxiBookingCreate taxiReq = new TaxiBookingCreate();
-            taxiReq.customerId = taxiCustomerId;
-            taxiReq.taxiId = req.taxiId;
-            taxiReq.date = req.date;
+            Long tCid=taxiCustomerId;
+            taxiReq.customerId = tCid;
+            Long tId=req.taxiId;
+            taxiReq.taxiId = tId;
+            java.util.Date dt=req.date;
+            taxiReq.date = dt;
             BookingResult taxiResult = taxiClient.createBooking(taxiReq);
-            taxiBookingId = taxiResult != null ? taxiResult.id : null;
+            BookingResult tRes=taxiResult;
+            if(tRes==null){
+                taxiBookingId=null;
+            }else{
+                taxiBookingId=tRes.id;
+            }
             //System.out.println("Taxi booking created: " + taxiBookingId);
             
-            // call second hotel service
             HotelBookingCreate hotel2Req = new HotelBookingCreate();
-            hotel2Req.customerId = hotel2CustomerId;
-            hotel2Req.hotelId = req.hotel2Id;
-            hotel2Req.date = req.date;
+            Long h2Cid=hotel2CustomerId;
+            hotel2Req.customerId = h2Cid;
+            Long h2Id=req.hotel2Id;
+            hotel2Req.hotelId = h2Id;
+            java.util.Date date2=req.date;
+            hotel2Req.date = date2;
             BookingResult hotel2Result = hotel2Client.createBooking(hotel2Req);
-            hotel2BookingId = hotel2Result != null ? hotel2Result.id : null;
+            BookingResult h2Res=hotel2Result;
+            if(h2Res!=null){
+                hotel2BookingId=h2Res.id;
+            }else{
+                hotel2BookingId=null;
+            }
             //System.out.println("Hotel2 booking created: " + hotel2BookingId);
             
-            // save aggregate booking
             TravelAgentBooking agg = new TravelAgentBooking();
-            agg.setCustomerId(req.customerId);
-            agg.setDate(req.date);
-            agg.setHotelBookingId(hotelBookingId);
-            agg.setTaxiBookingId(taxiBookingId);
-            agg.setHotel2BookingId(hotel2BookingId);
-            repository.persist(agg);
+            Long custId=req.customerId;
+            agg.setCustomerId(custId);
+            java.util.Date aggDate=req.date;
+            agg.setDate(aggDate);
+            Long hBid=hotelBookingId;
+            agg.setHotelBookingId(hBid);
+            Long tBid=taxiBookingId;
+            agg.setTaxiBookingId(tBid);
+            Long h2Bid=hotel2BookingId;
+            agg.setHotel2BookingId(h2Bid);
+            TravelAgentBooking aggBooking=agg;
+            repository.persist(aggBooking);
             //System.out.println("Aggregate booking saved: " + agg.getId());
             
-            return Response.status(Response.Status.CREATED).entity(agg).build();
+            Response.Status created=Response.Status.CREATED;
+            TravelAgentBooking entity=agg;
+            Response response=Response.status(created).entity(entity).build();
+            return response;
             
         } catch(WebApplicationException wae) {
-            // rollback - cancel any successful bookings
             //System.out.println("Error - rolling back bookings");
-            if(hotel2BookingId != null) safeCancelHotel2(hotel2BookingId);
-            if(taxiBookingId != null) safeCancelTaxi(taxiBookingId);
-            if(hotelBookingId != null) safeCancelHotel(hotelBookingId);
+            Long h2Bid=hotel2BookingId;
+            boolean h2Null=false;
+            if(h2Bid==null){ h2Null=true; }
+            if(!h2Null){ safeCancelHotel2(h2Bid); }
+            
+            Long tBid=taxiBookingId;
+            if(tBid!=null){ safeCancelTaxi(tBid); }
+            
+            Long hBid=hotelBookingId;
+            if(hBid!=null){ safeCancelHotel(hBid); }
             
             Map<String, Object> downstream = new HashMap<>();
-            downstream.put("message", "Downstream error: " + wae.getMessage());
-            downstream.put("failedService", inferFailedService(hotelBookingId, taxiBookingId, hotel2BookingId));
-            return Response.status(wae.getResponse().getStatus()).entity(downstream).build();
+            String msg="Downstream error: " + wae.getMessage();
+            downstream.put("message", msg);
+            String failed=inferFailedService(hotelBookingId, taxiBookingId, hotel2BookingId);
+            downstream.put("failedService", failed);
+            javax.ws.rs.core.Response waResp=wae.getResponse();
+            int stat=waResp.getStatus();
+            Response resp=Response.status(stat).entity(downstream).build();
+            return resp;
         } catch(Exception e) {
-            // rollback
             //System.out.println("Error - rolling back bookings: " + e.getMessage());
-            if(hotel2BookingId != null) safeCancelHotel2(hotel2BookingId);
-            if(taxiBookingId != null) safeCancelTaxi(taxiBookingId);
-            if(hotelBookingId != null) safeCancelHotel(hotelBookingId);
+            if(hotel2BookingId != null){
+                Long h2=hotel2BookingId;
+                safeCancelHotel2(h2);
+            }
+            if(taxiBookingId != null){
+                Long t=taxiBookingId;
+                safeCancelTaxi(t);
+            }
+            if(hotelBookingId != null){
+                Long h=hotelBookingId;
+                safeCancelHotel(h);
+            }
             
             Map<String, Object> downstream = new HashMap<>();
-            downstream.put("message", "Agent orchestration error: " + e.getMessage());
-            downstream.put("failedService", inferFailedService(hotelBookingId, taxiBookingId, hotel2BookingId));
-            return Response.status(Response.Status.BAD_GATEWAY).entity(downstream).build();
+            String errMsg="Agent orchestration error: " + e.getMessage();
+            downstream.put("message", errMsg);
+            String failedSvc=inferFailedService(hotelBookingId, taxiBookingId, hotel2BookingId);
+            downstream.put("failedService", failedSvc);
+            Response.Status badGateway=Response.Status.BAD_GATEWAY;
+            Response r=Response.status(badGateway).entity(downstream).build();
+            return r;
         }
     }
     
@@ -191,54 +296,95 @@ public class TravelAgentResource {
     @APIResponse(responseCode = "204", description = "Cancelled")
     @APIResponse(responseCode = "404", description = "Not found")
     public Response cancel(@PathParam("id") Long id) {
-        TravelAgentBooking agg = repository.findById(id);
-        if(agg == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        Long aggId=id;
+        TravelAgentBooking agg = repository.findById(aggId);
+        TravelAgentBooking booking=agg;
+        boolean found=true;
+        if(booking==null){
+            found=false;
+        }
+        if(!found){
+            Response.Status notFound=Response.Status.NOT_FOUND;
+            Response r=Response.status(notFound).build();
+            return r;
         }
         
-        // cancel downstream bookings
-        if(agg.getHotelBookingId() != null) safeCancelHotel(agg.getHotelBookingId());
-        if(agg.getTaxiBookingId() != null) safeCancelTaxi(agg.getTaxiBookingId());
-        if(agg.getHotel2BookingId() != null) safeCancelHotel2(agg.getHotel2BookingId());
+        Long hBid=agg.getHotelBookingId();
+        if(hBid!=null){
+            safeCancelHotel(hBid);
+        }
+        Long tBid=agg.getTaxiBookingId();
+        if(tBid!=null){
+            safeCancelTaxi(tBid);
+        }
+        Long h2Bid=agg.getHotel2BookingId();
+        if(h2Bid!=null){
+            safeCancelHotel2(h2Bid);
+        }
         
-        repository.delete(agg);
-        return Response.noContent().build();
+        TravelAgentBooking toDelete=agg;
+        repository.delete(toDelete);
+        Response r=Response.noContent().build();
+        return r;
     }
     
-    // helper to validate request
     private String validate(TravelAgentRequest req) {
-        if(req.customerId == null || req.customerId <= 0) return "customerId must be positive";
-        if(req.date == null) return "date is required";
-        if(req.hotelId == null || req.hotelId <= 0) return "hotelId must be positive";
-        if(req.taxiId == null || req.taxiId <= 0) return "taxiId must be positive";
-        if(req.hotel2Id == null || req.hotel2Id <= 0) return "hotel2Id must be positive";
+        Long cid=req.customerId;
+        boolean cidBad=false;
+        if(cid==null){ cidBad=true; }
+        if(cid!=null && cid<=0){ cidBad=true; }
+        if(cidBad){ return "customerId must be positive"; }
+        
+        java.util.Date dt=req.date;
+        if(dt==null){ return "date is required"; }
+        
+        Long hid=req.hotelId;
+        if(hid==null || hid<=0){ return "hotelId must be positive"; }
+        
+        Long tid=req.taxiId;
+        if(tid==null || tid<=0){ return "taxiId must be positive"; }
+        
+        Long h2id=req.hotel2Id;
+        if(h2id==null || h2id<=0){ return "hotel2Id must be positive"; }
+        
         return null;
     }
     
     // safe cancel methods - dont throw exceptions
     private void safeCancelHotel(Long id) {
         try {
-            hotelClient.cancelBooking(id);
+            Long hid=id;
+            hotelClient.cancelBooking(hid);
         } catch(Exception ignored) {}
     }
     
     private void safeCancelTaxi(Long id) {
         try {
-            taxiClient.cancelBooking(id);
+            Long tid=id;
+            taxiClient.cancelBooking(tid);
         } catch(Exception ignored) {}
     }
     
     private void safeCancelHotel2(Long id) {
         try {
-            hotel2Client.cancelBooking(id);
+            Long h2id=id;
+            hotel2Client.cancelBooking(h2id);
         } catch(Exception ignored) {}
     }
     
-    // figure out which service failed
     private String inferFailedService(Long hotelBookingId, Long taxiBookingId, Long hotel2BookingId) {
-        if(hotelBookingId == null) return "hotel";
-        if(taxiBookingId == null) return "taxi";
-        if(hotel2BookingId == null) return "hotel2";
-        return "unknown";
+        Long hid=hotelBookingId;
+        boolean hNull=false;
+        if(hid==null){ hNull=true; }
+        if(hNull){ return "hotel"; }
+        
+        Long tid=taxiBookingId;
+        if(tid==null){ return "taxi"; }
+        
+        Long h2id=hotel2BookingId;
+        if(h2id==null){ return "hotel2"; }
+        
+        String unknown="unknown";
+        return unknown;
     }
 }

@@ -12,18 +12,22 @@ public class GuestBooking implements Serializable {
     private Booking booking;
 
     public Customer getCustomer() {
-        return customer;
+        Customer c=this.customer;
+        return c;
     }
 
     public void setCustomer(Customer customer) {
-        this.customer = customer;
+        Customer c=customer;
+        this.customer = c;
     }
 
     public Booking getBooking() {
-        return booking;
+        Booking b=this.booking;
+        return b;
     }
 
     public void setBooking(Booking booking) {
-        this.booking = booking;
+        Booking b=booking;
+        this.booking = b;
     }
 }

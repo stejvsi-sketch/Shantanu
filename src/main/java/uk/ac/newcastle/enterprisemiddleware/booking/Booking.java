@@ -10,7 +10,8 @@ import java.io.Serializable;
 import java.util.Date;
 //import java.time.LocalDate; // tried using LocalDate but Date works better with JPA
 
-// represents a hotel booking
+// Booking class - this represents when a customer books a hotel
+// stores which customer, which hotel, and what date
 @Entity
 @Table(name = "booking", uniqueConstraints = @UniqueConstraint(columnNames = {"customer_id", "hotel_id", "booking_date"}))
 @NamedQueries({
@@ -19,32 +20,33 @@ import java.util.Date;
     @NamedQuery(name = Booking.FIND_BY_HOTEL, query = "SELECT b FROM Booking b WHERE b.hotel.id = :hotelId ORDER BY b.bookingDate ASC")
 })
 public class Booking implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L; // for serialization
     
+    // named query constants
     public static final String FIND_ALL = "Booking.findAll";
     public static final String FIND_BY_CUSTOMER = "Booking.findByCustomer";
     public static final String FIND_BY_HOTEL = "Booking.findByHotel";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id // primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto increment
+    private Long id; // booking id
 
-    @NotNull
-    @ManyToOne  // many bookings can belong to one customer
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @NotNull // customer is required
+    @ManyToOne  // multiple bookings can have same customer
+    @JoinColumn(name = "customer_id") // foreign key to customer table
+    private Customer customer; // the customer who made the booking
 
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "hotel_id")
-    private Hotel hotel;
+    @NotNull // hotel is required
+    @ManyToOne // multiple bookings can be for same hotel
+    @JoinColumn(name = "hotel_id") // foreign key to hotel table
+    private Hotel hotel; // the hotel being booked
 
 
-    @NotNull
-    @Future(message = "Booking date must be in the future") // makes sure you cant book in the past
-    @Column(name = "booking_date")
-    @Temporal(TemporalType.DATE)
-    private Date bookingDate;
+    @NotNull // date is required
+    @Future(message = "Booking date must be in the future") // cant book in past
+    @Column(name = "booking_date") // column name
+    @Temporal(TemporalType.DATE) // stores only date not time
+    private Date bookingDate; // date of the booking
 
 
     public Long getId() {
@@ -79,18 +81,25 @@ public class Booking implements Serializable {
         this.bookingDate = bookingDate;
     }
 
+    // equals method - bookings are same if customer, hotel and date are same
+    // this prevents duplicate bookings
     @Override
     public boolean equals(Object o) {
+        // check if same reference
         if(this == o) {
             return true;
         }
+        // check null
         if(o == null) {
             return false;
         }
+        // check type
         if(!(o instanceof Booking)) {
             return false;
         }
+        // cast to Booking
         Booking booking = (Booking) o;
+        // check customer field
         if(customer == null) {
             if(booking.customer != null) {
                 return false;
@@ -98,6 +107,7 @@ public class Booking implements Serializable {
         } else if(!customer.equals(booking.customer)) {
             return false;
         }
+        // check hotel field
         if(hotel == null) {
             if(booking.hotel != null) {
                 return false;
@@ -105,6 +115,7 @@ public class Booking implements Serializable {
         } else if(!hotel.equals(booking.hotel)) {
             return false;
         }
+        // check date field
         if(bookingDate == null) {
             if(booking.bookingDate != null) {
                 return false;
@@ -115,15 +126,19 @@ public class Booking implements Serializable {
         return true;
     }
 
+    // hashcode - combines customer, hotel and date
     @Override
     public int hashCode() {
-        int result = 17;
+        int result = 17; // start with prime
+        // add customer hash
         if(customer != null) {
             result = 31 * result + customer.hashCode();
         }
+        // add hotel hash
         if(hotel != null) {
             result = 31 * result + hotel.hashCode();
         }
+        // add date hash
         if(bookingDate != null) {
             result = 31 * result + bookingDate.hashCode();
         }

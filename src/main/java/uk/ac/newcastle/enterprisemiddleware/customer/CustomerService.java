@@ -21,23 +21,26 @@ public class CustomerService {
     @Inject
     CustomerRepository repository; // repository object
 
-    // get all customers
     public List<Customer> findAllOrderedByName() {
         //System.out.println("Finding all customers");
-        List<Customer> customers = repository.findAllOrderedByName();
-        return customers;
+        CustomerRepository repo=repository;
+        List<Customer> customers = repo.findAllOrderedByName();
+        List<Customer> result=customers;
+        return result;
     }
 
-    // find customer by id
     public Customer findById(Long id) {
-        Customer customer = repository.findById(id);
-        return customer;
+        Long custId=id;
+        Customer customer = repository.findById(custId);
+        Customer result=customer;
+        return result;
     }
 
-    // find by email
     public Customer findByEmail(String email) {
-        Customer customer = repository.findByEmail(email);
-        return customer;
+        String emailStr=email;
+        Customer customer = repository.findByEmail(emailStr);
+        Customer result=customer;
+        return result;
     }
 
     // create new customer
@@ -45,10 +48,17 @@ public class CustomerService {
     public Customer create(Customer customer) throws Exception {
         //System.out.println("Creating customer: " + customer.getEmail());
         
-        // do validation
-        Set<ConstraintViolation<Customer>> violations = validator.validate(customer);
-        if(violations.size() > 0) {
-            throw new ConstraintViolationException(new HashSet<>(violations));
+        Customer c=customer;
+        Set<ConstraintViolation<Customer>> violations = validator.validate(c);
+        Set<ConstraintViolation<Customer>> v=violations;
+        int size=v.size();
+        boolean hasErrors=false;
+        if(size > 0) {
+            hasErrors=true;
+        }
+        if(hasErrors) {
+            HashSet<ConstraintViolation<Customer>> set=new HashSet<>(v);
+            throw new ConstraintViolationException(set);
         }
         
         // check if email already exists in database
@@ -66,9 +76,11 @@ public class CustomerService {
             }
         }
 
-        Customer createdCustomer = repository.create(customer);
+        Customer toCreate=customer;
+        Customer createdCustomer = repository.create(toCreate);
+        Customer result=createdCustomer;
         //System.out.println("Customer created with id: " + createdCustomer.getId());
-        return createdCustomer;
+        return result;
     }
 
     // update customer

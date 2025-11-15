@@ -23,26 +23,31 @@ public class BookingService {
     // gets all bookings
     public List<Booking> findAllOrderedByDate() {
         //System.out.println("Getting all bookings");
-        List<Booking> bookings = repository.findAllOrderedByDate();
-        return bookings;
+        BookingRepository repo=repository;
+        List<Booking> bookings = repo.findAllOrderedByDate();
+        List<Booking> result=bookings;
+        return result;
     }
 
-    // get one booking
     public Booking findById(Long id) {
-        Booking booking = repository.findById(id);
-        return booking;
+        Long bookingId=id;
+        Booking booking = repository.findById(bookingId);
+        Booking result=booking;
+        return result;
     }
 
-    // get bookings for customer
     public List<Booking> findByCustomerId(Long customerId) {
-        List<Booking> bookings = repository.findByCustomerId(customerId);
-        return bookings;
+        Long cid=customerId;
+        List<Booking> bookings = repository.findByCustomerId(cid);
+        List<Booking> result=bookings;
+        return result;
     }
 
-    // get bookings for hotel
     public List<Booking> findByHotelId(Long hotelId) {
-        List<Booking> bookings = repository.findByHotelId(hotelId);
-        return bookings;
+        Long hid=hotelId;
+        List<Booking> bookings = repository.findByHotelId(hid);
+        List<Booking> result=bookings;
+        return result;
     }
 
     // create new booking
@@ -50,11 +55,18 @@ public class BookingService {
     public Booking create(Booking booking) throws Exception {
         //System.out.println("Creating booking");
         
-        // validate booking first
-        Set<ConstraintViolation<Booking>> violations = validator.validate(booking);
-        int violationCount = violations.size();
-        if(violationCount > 0) {
-            throw new ConstraintViolationException(new HashSet<>(violations));
+        Booking b=booking;
+        Set<ConstraintViolation<Booking>> violations = validator.validate(b);
+        Set<ConstraintViolation<Booking>> v=violations;
+        int violationCount = v.size();
+        int count=violationCount;
+        boolean hasViolations=false;
+        if(count > 0) {
+            hasViolations=true;
+        }
+        if(hasViolations) {
+            HashSet<ConstraintViolation<Booking>> set=new HashSet<>(v);
+            throw new ConstraintViolationException(set);
         }
 
         // need to check if this booking already exists
@@ -91,13 +103,18 @@ public class BookingService {
             }
         }
         
-        if(isDuplicate == true) {
-            throw new Exception("This customer already has a booking at this hotel on this date");
+        boolean dup=isDuplicate;
+        if(dup == true) {
+            String msg="This customer already has a booking at this hotel on this date";
+            Exception ex=new Exception(msg);
+            throw ex;
         }
 
-        Booking createdBooking = repository.create(booking);
+        Booking toCreate=booking;
+        Booking createdBooking = repository.create(toCreate);
+        Booking result=createdBooking;
         //System.out.println("Booking created");
-        return createdBooking;
+        return result;
     }
 
     // update existing booking

@@ -5,7 +5,7 @@ import org.eclipse.microprofile.openapi.annotations.info.Contact;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import javax.ws.rs.ApplicationPath;
 
-@ApplicationPath("/")
+@ApplicationPath("/api")
 @OpenAPIDefinition(
     info = @Info(
         title = "Hotel Booking Service API",

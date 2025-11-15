@@ -20,23 +20,26 @@ public class HotelService {
     @Inject
     HotelRepository repository; // repository for hotels
 
-    // get all hotels from database
     public List<Hotel> findAllOrderedByName() {
         //System.out.println("Finding all hotels");
-        List<Hotel> hotels = repository.findAllOrderedByName();
-        return hotels;
+        HotelRepository repo=repository;
+        List<Hotel> hotels = repo.findAllOrderedByName();
+        List<Hotel> result=hotels;
+        return result;
     }
 
-    // find hotel by its id
     public Hotel findById(Long id) {
-        Hotel hotel = repository.findById(id);
-        return hotel;
+        Long hotelId=id;
+        Hotel hotel = repository.findById(hotelId);
+        Hotel result=hotel;
+        return result;
     }
 
-    // find hotel by phone number
     public Hotel findByPhoneNumber(String phoneNumber) {
-        Hotel hotel = repository.findByPhoneNumber(phoneNumber);
-        return hotel;
+        String phone=phoneNumber;
+        Hotel hotel = repository.findByPhoneNumber(phone);
+        Hotel result=hotel;
+        return result;
     }
 
     // create new hotel in system
@@ -44,11 +47,18 @@ public class HotelService {
     public Hotel create(Hotel hotel) throws Exception {
         //System.out.println("Creating hotel: " + hotel.getName());
         
-        // do validation on hotel
-        Set<ConstraintViolation<Hotel>> violations = validator.validate(hotel);
-        int violationCount = violations.size();
-        if(violationCount > 0) {
-            throw new ConstraintViolationException(new HashSet<>(violations));
+        Hotel h=hotel;
+        Set<ConstraintViolation<Hotel>> violations = validator.validate(h);
+        Set<ConstraintViolation<Hotel>> v=violations;
+        int violationCount = v.size();
+        int count=violationCount;
+        boolean hasViolations=false;
+        if(count > 0) {
+            hasViolations=true;
+        }
+        if(hasViolations) {
+            HashSet<ConstraintViolation<Hotel>> set=new HashSet<>(v);
+            throw new ConstraintViolationException(set);
         }
         
         // check if phone number is already used by another hotel
@@ -69,9 +79,11 @@ public class HotelService {
             }
         }
 
-        Hotel createdHotel = repository.create(hotel);
+        Hotel toCreate=hotel;
+        Hotel createdHotel = repository.create(toCreate);
+        Hotel result=createdHotel;
         //System.out.println("Hotel created with id: " + createdHotel.getId());
-        return createdHotel;
+        return result;
     }
 
     // update hotel information

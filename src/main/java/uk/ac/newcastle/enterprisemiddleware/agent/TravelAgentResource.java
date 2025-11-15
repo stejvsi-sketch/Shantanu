@@ -3,6 +3,7 @@ package uk.ac.newcastle.enterprisemiddleware.agent;
 import uk.ac.newcastle.enterprisemiddleware.agent.client.Hotel2Client;
 import uk.ac.newcastle.enterprisemiddleware.agent.client.HotelClient;
 import uk.ac.newcastle.enterprisemiddleware.agent.client.TaxiClient;
+import uk.ac.newcastle.enterprisemiddleware.agent.Hotel2BookingCreate;
 import uk.ac.newcastle.enterprisemiddleware.booking.BookingService;
 import uk.ac.newcastle.enterprisemiddleware.customer.CustomerService;
 import uk.ac.newcastle.enterprisemiddleware.hotel.HotelService;
@@ -18,16 +19,20 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 // agent orchestrator - books across 3 services
 @Path("/api/agent/bookings")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class TravelAgentResource {
+    private static final DateTimeFormatter ISO_DATE = DateTimeFormatter.ISO_LOCAL_DATE;
     
     @Inject
     TravelAgentBookingRepository repository;
@@ -165,6 +170,8 @@ public class TravelAgentResource {
         Long hotelBookingId = null;
         Long taxiBookingId = null;
         Long hotel2BookingId = null;
+        String globalBookingId = UUID.randomUUID().toString();
+        String bookingDate = formatDate(req.date);
         
         try {
             HotelBookingCreate hotelReq = new HotelBookingCreate();
@@ -189,12 +196,10 @@ public class TravelAgentResource {
             //System.out.println("Hotel booking created: " + hotelBookingId);
             
             TaxiBookingCreate taxiReq = new TaxiBookingCreate();
-            Long tCid=taxiCustomerId;
-            taxiReq.customerId = tCid;
+            taxiReq.globalId = globalBookingId;
             Long tId=req.taxiId;
             taxiReq.taxiId = tId;
-            java.util.Date dt=req.date;
-            taxiReq.date = dt;
+            taxiReq.bookingDate = bookingDate;
             BookingResult taxiResult = taxiClient.createBooking(taxiReq);
             BookingResult tRes=taxiResult;
             if(tRes==null){
@@ -204,13 +209,11 @@ public class TravelAgentResource {
             }
             //System.out.println("Taxi booking created: " + taxiBookingId);
             
-            HotelBookingCreate hotel2Req = new HotelBookingCreate();
-            Long h2Cid=hotel2CustomerId;
-            hotel2Req.customerId = h2Cid;
+            Hotel2BookingCreate hotel2Req = new Hotel2BookingCreate();
+            hotel2Req.globalBookingId = globalBookingId;
             Long h2Id=req.hotel2Id;
             hotel2Req.hotelId = h2Id;
-            java.util.Date date2=req.date;
-            hotel2Req.date = date2;
+            hotel2Req.bookingDate = bookingDate;
             BookingResult hotel2Result = hotel2Client.createBooking(hotel2Req);
             BookingResult h2Res=hotel2Result;
             if(h2Res!=null){
@@ -386,5 +389,12 @@ public class TravelAgentResource {
         
         String unknown="unknown";
         return unknown;
+    }
+    
+    private String formatDate(java.util.Date date) {
+        if(date == null){
+            return null;
+        }
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(ISO_DATE);
     }
 }

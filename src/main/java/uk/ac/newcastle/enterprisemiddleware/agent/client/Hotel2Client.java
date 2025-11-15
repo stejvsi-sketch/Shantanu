@@ -3,14 +3,14 @@ package uk.ac.newcastle.enterprisemiddleware.agent.client;
 import uk.ac.newcastle.enterprisemiddleware.agent.BookingResult;
 import uk.ac.newcastle.enterprisemiddleware.agent.CustomerResult;
 import uk.ac.newcastle.enterprisemiddleware.agent.DownstreamCustomerCreate;
-import uk.ac.newcastle.enterprisemiddleware.agent.HotelBookingCreate;
+import uk.ac.newcastle.enterprisemiddleware.agent.Hotel2BookingCreate;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/api")
+@Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RegisterRestClient(configKey = "hotel2-api")
@@ -25,10 +25,10 @@ public interface Hotel2Client {
     List<CustomerResult> listCustomers();
     
     @POST
-    @Path("/bookings")
-    BookingResult createBooking(HotelBookingCreate req);
+    @Path("/hotel-booking")
+    BookingResult createBooking(Hotel2BookingCreate req);
     
     @DELETE
-    @Path("/bookings/{id}")
+    @Path("/hotel-booking/{id}")
     void cancelBooking(@PathParam("id") Long bookingId);
 }

@@ -10,7 +10,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/api")
+@Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RegisterRestClient(configKey = "taxi-api")
@@ -25,10 +25,10 @@ public interface TaxiClient {
     List<CustomerResult> listCustomers();
     
     @POST
-    @Path("/bookings")
+    @Path("/taxi-booking")
     BookingResult createBooking(TaxiBookingCreate req);
     
     @DELETE
-    @Path("/bookings/{id}")
+    @Path("/taxi-booking/local/{id}")
     void cancelBooking(@PathParam("id") Long bookingId);
 }

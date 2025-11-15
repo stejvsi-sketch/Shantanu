@@ -2,12 +2,12 @@ package uk.ac.newcastle.enterprisemiddleware.agent;
 
 import javax.validation.constraints.NotNull;
 
-public class TaxiBookingCreate {
+public class Hotel2BookingCreate {
     @NotNull
-    public String globalId;
+    public String globalBookingId;
 
     @NotNull
-    public Long taxiId;
+    public Long hotelId;
 
     @NotNull
     public String bookingDate;

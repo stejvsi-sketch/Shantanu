@@ -210,6 +210,7 @@ public class TravelAgentResource {
             //System.out.println("Taxi booking created: " + taxiBookingId);
             
             Hotel2BookingCreate hotel2Req = new Hotel2BookingCreate();
+            hotel2Req.customerId = h2CustId;
             hotel2Req.globalBookingId = globalBookingId;
             Long h2Id=req.hotel2Id;
             hotel2Req.hotelId = h2Id;

@@ -4,6 +4,9 @@ import javax.validation.constraints.NotNull;
 
 public class Hotel2BookingCreate {
     @NotNull
+    public Long customerId;
+    
+    @NotNull
     public String globalBookingId;
 
     @NotNull

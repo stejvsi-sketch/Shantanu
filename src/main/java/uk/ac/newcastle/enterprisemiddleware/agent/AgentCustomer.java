@@ -17,7 +17,7 @@ public class AgentCustomer implements Serializable {
     
     @NotNull
     @Size(min = 1, max = 50)
-    @Pattern(regexp = "[A-Za-z-' ]+", message = "Name must contain only letters")
+    @Pattern(regexp = "[A-Za-z0-9-' ]+", message = "Name may contain letters, numbers, spaces, apostrophes or hyphens")
     private String name;
     
     @NotNull

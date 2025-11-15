@@ -165,11 +165,11 @@ public class AgentCustomerResource {
         Long hCid=mapping.getHotelCustomerId();
         Long tCid=mapping.getTaxiCustomerId();
         Long h2Cid=mapping.getHotel2CustomerId();
-        result.put("mapping", Map.of(
-            "hotelCustomerId", hCid,
-            "taxiCustomerId", tCid,
-            "hotel2CustomerId", h2Cid
-        ));
+        Map<String, Object> mappingResult = new HashMap<>();
+        mappingResult.put("hotelCustomerId", hCid);
+        mappingResult.put("taxiCustomerId", tCid);
+        mappingResult.put("hotel2CustomerId", h2Cid);
+        result.put("mapping", mappingResult);
         
         Response.Status created=Response.Status.CREATED;
         Response resp=Response.status(created).entity(result).build();
